@@ -1,0 +1,10 @@
+# 复制为 .dev.vars 后填值。
+# ⚠ 本文件会被提交进 git（.gitignore 白名单例外），绝不要在此放真实 token——真实值只放 .dev.vars。
+#
+# 方式 A：本地直连线上东京库（把真实 URL/token 填到 .dev.vars，不要填这里）
+# TURSO_DATABASE_URL=libsql://timslip-db-<org>.aws-ap-northeast-1.turso.io
+# TURSO_AUTH_TOKEN=<turso db tokens create timslip-db 生成>
+#
+# 方式 B：本地 libSQL（turso dev，无需 token）
+TURSO_DATABASE_URL=http://127.0.0.1:8080
+TURSO_AUTH_TOKEN=

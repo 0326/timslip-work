@@ -1,0 +1,94 @@
+/* === About Page === */
+.about-page {
+  min-height: 100vh;
+  padding-top: 56px;
+  background: var(--bg);
+}
+
+.about-page-content {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: var(--space-xl) var(--space-lg);
+}
+
+.about-page-title {
+  margin-bottom: var(--space-xl);
+  text-align: center;
+}
+
+.about-page-logo {
+  display: block;
+  margin: 0 auto;
+  width: 200px;
+  height: 200px;
+  max-width: 60vw;
+  object-fit: contain;
+  animation: logo-spin 40s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .about-page-logo {
+    animation: none;
+  }
+}
+
+.about-section {
+  margin-bottom: var(--space-xl);
+}
+
+.about-section-title {
+  font-family: var(--font-serif);
+  font-size: 1.2rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--ink);
+  margin-bottom: var(--space-lg);
+  padding-bottom: var(--space-sm);
+  border-bottom: 1px solid var(--rule);
+}
+
+.about-section-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.about-section-body p {
+  font-family: var(--font-serif);
+  font-size: 0.95rem;
+  line-height: 1.9;
+  color: var(--ink-light);
+  letter-spacing: 0.02em;
+}
+
+.about-name {
+  font-family: var(--font-serif);
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: 0.15em;
+}
+
+.about-en {
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  color: var(--muted);
+  letter-spacing: 0.2em;
+  margin-left: var(--space-sm);
+}
+
+.about-highlight {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+/* === Responsive === */
+@media (max-width: 768px) {
+  .about-page-content {
+    padding: var(--space-lg) var(--space-md);
+  }
+  .about-section-body p {
+    font-size: 0.9rem;
+    line-height: 1.85;
+  }
+}

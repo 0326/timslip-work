@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <radialGradient id="inkBg" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#f5f0e8"/>
+      <stop offset="100%" stop-color="#e8dfd0"/>
+    </radialGradient>
+    <radialGradient id="centerGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#fff8e7" stop-opacity="1"/>
+      <stop offset="40%" stop-color="#f0d060" stop-opacity="0.8"/>
+      <stop offset="70%" stop-color="#c9a84c" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#2a2015" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="inkBlur">
+      <feGaussianBlur stdDeviation="0.8"/>
+    </filter>
+    <filter id="softGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- 宣纸背景 -->
+  <circle cx="100" cy="100" r="98" fill="url(#inkBg)"/>
+  
+  <!-- 墨色外圈漩涡 -->
+  <g opacity="0.85" filter="url(#inkBlur)">
+    <!-- 最外层墨环 -->
+    <path d="M 100 15 
+             C 155 20, 185 55, 185 100 
+             C 185 150, 150 185, 100 185
+             C 45 185, 15 145, 15 100
+             C 15 50, 45 15, 100 15" 
+          fill="none" stroke="#1a1510" stroke-width="3" stroke-linecap="round"/>
+    
+    <!-- 第二层墨环 -->
+    <path d="M 100 35 
+             C 140 38, 165 65, 165 100 
+             C 165 138, 138 165, 100 165
+             C 58 165, 35 135, 35 100
+             C 35 62, 60 35, 100 35" 
+          fill="none" stroke="#2a2418" stroke-width="4" stroke-linecap="round"/>
+    
+    <!-- 第三层墨环 -->
+    <path d="M 100 55 
+             C 130 57, 148 75, 148 100 
+             C 148 128, 128 145, 100 145
+             C 68 145, 52 125, 52 100
+             C 52 72, 70 55, 100 55" 
+          fill="none" stroke="#3d3222" stroke-width="5" stroke-linecap="round"/>
+    
+    <!-- 第四层墨环 -->
+    <path d="M 100 72 
+             C 122 73, 132 85, 132 100 
+             C 132 117, 120 128, 100 128
+             C 78 128, 68 115, 68 100
+             C 68 82, 80 72, 100 72" 
+          fill="none" stroke="#4d3d28" stroke-width="4" stroke-linecap="round"/>
+  </g>
+  
+  <!-- 中心光芒 -->
+  <circle cx="100" cy="100" r="55" fill="url(#centerGlow)" filter="url(#softGlow)"/>
+  
+  <!-- 飞白笔触 - 装饰性墨点 -->
+  <circle cx="45" cy="55" r="2" fill="#1a1510" opacity="0.6"/>
+  <circle cx="160" cy="150" r="1.5" fill="#1a1510" opacity="0.5"/>
+  <circle cx="35" cy="130" r="1" fill="#2a2015" opacity="0.4"/>
+  <circle cx="170" cy="70" r="1.8" fill="#1a1510" opacity="0.55"/>
+  
+  <!-- 中心古卷光 -->
+  <circle cx="100" cy="100" r="8" fill="#fff8e7" filter="url(#softGlow)"/>
+  <circle cx="100" cy="100" r="15" fill="none" stroke="#f0d060" stroke-width="0.5" opacity="0.6"/>
+</svg>

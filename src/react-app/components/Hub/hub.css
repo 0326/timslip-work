@@ -1,0 +1,174 @@
+/* === Hub Page === */
+.hub-page {
+  min-height: 100vh;
+  padding-top: 56px;
+  background: var(--bg);
+}
+
+.hub-page-content {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: var(--space-xl) var(--space-lg);
+}
+
+.hub-page-title {
+  font-family: var(--font-serif);
+  font-size: 1.8rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  color: var(--ink);
+  margin-bottom: var(--space-xl);
+  text-align: center;
+}
+
+.hub-section-title {
+  font-family: var(--font-serif);
+  font-size: 1.2rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--ink);
+  margin-bottom: var(--space-lg);
+  padding-bottom: var(--space-sm);
+  border-bottom: 1px solid var(--rule);
+}
+
+/* === ProgressBoard === */
+.hub-section {
+  margin-bottom: var(--space-xl);
+}
+
+.hub-books-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: var(--space-md);
+  margin-bottom: var(--space-xl);
+}
+
+.hub-book-card {
+  padding: var(--space-md);
+  border: 1px solid var(--rule);
+  background: rgba(255, 255, 255, 0.3);
+  transition: all var(--duration-normal) ease;
+}
+
+.hub-book-card.active {
+  cursor: pointer;
+  border-color: var(--accent);
+}
+
+.hub-book-card.active:hover {
+  background: rgba(194, 58, 43, 0.05);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.hub-book-card.planned {
+  opacity: 0.4;
+}
+
+.hub-book-name {
+  font-family: var(--font-serif);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: var(--space-xs);
+}
+
+.hub-book-card.active .hub-book-name {
+  color: var(--accent);
+}
+
+.hub-book-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: var(--space-sm);
+}
+
+.hub-book-dynasty {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.hub-book-author {
+  font-size: 0.7rem;
+  color: var(--rule);
+}
+
+.hub-book-status {
+  font-size: 0.7rem;
+  letter-spacing: 0.15em;
+  color: var(--muted);
+}
+
+.hub-book-card.active .hub-book-status {
+  color: var(--accent);
+}
+
+/* === GameCard === */
+.hub-games {
+  margin-top: var(--space-xl);
+}
+
+.hub-game-card {
+  padding: var(--space-lg);
+  border: 1px solid var(--rule);
+  background: rgba(255, 255, 255, 0.3);
+  transition: all var(--duration-normal) ease;
+  margin-bottom: var(--space-md);
+}
+
+.hub-game-card.available {
+  cursor: pointer;
+  border-color: var(--accent);
+}
+
+.hub-game-card.available:hover {
+  background: rgba(194, 58, 43, 0.05);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.hub-game-card.locked {
+  opacity: 0.4;
+}
+
+.hub-game-card-title {
+  font-family: var(--font-serif);
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: var(--space-sm);
+}
+
+.hub-game-card.available .hub-game-card-title {
+  color: var(--accent);
+}
+
+.hub-game-card-desc {
+  font-family: var(--font-serif);
+  font-size: 0.9rem;
+  line-height: 1.8;
+  color: var(--ink-light);
+  margin-bottom: var(--space-md);
+}
+
+.hub-game-card-cta {
+  font-size: 0.8rem;
+  letter-spacing: 0.2em;
+  color: var(--muted);
+}
+
+.hub-game-card.available .hub-game-card-cta {
+  color: var(--accent);
+}
+
+/* === Responsive === */
+@media (max-width: 768px) {
+  .hub-page-content {
+    padding: var(--space-lg) var(--space-md);
+  }
+  .hub-books-grid {
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  }
+}

@@ -1,0 +1,35 @@
+/* 设计 Token — 依据 FRONTEND_ARCH.md §3.1 */
+:root {
+  /* 色彩 */
+  --bg: #f5f0e8;              /* 宣纸底色 */
+  --bg-dark: #e8e0d4;         /* 深宣纸 */
+  --ink: #1a1a1a;             /* 墨黑 */
+  --ink-light: #3a3a3a;       /* 淡墨 */
+  --muted: #8a7e6e;           /* 远山灰褐 */
+  --rule: #d4c9b8;            /* 分割线 */
+  --accent: #c23a2b;          /* 朱砂红（朝代点亮色） */
+  --accent-light: #e85d4e;     /* 浅朱砂 */
+
+  /* 字体 */
+  --font-serif: 'CrimsonPro', 'Noto Serif SC', 'Songti SC', 'SimSun', serif;
+  --font-sans: 'InstrumentSans', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+
+  /* 间距 */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 48px;
+
+  /* 圆角 */
+  --radius-sm: 2px;
+  --radius-md: 4px;
+
+  /* 动效 */
+  --ease-ink: cubic-bezier(0.4, 0, 0.2, 1);       /* 水墨晕染感 */
+  --ease-scroll: cubic-bezier(0.25, 0.1, 0.25, 1); /* 滚动 */
+  --duration-fast: 0.2s;
+  --duration-normal: 0.3s;
+  --duration-slow: 0.5s;
+  --duration-slower: 0.8s;
+}

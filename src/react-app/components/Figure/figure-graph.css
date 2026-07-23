@@ -1,0 +1,262 @@
+/* 3D 群英关系星图 全屏视图 */
+.fgx-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+.fgx-canvas canvas { display: block; }
+
+/* 星空叠加层（透明画布 + screen 混合，叠在 3D 图之上做氛围，不遮挡节点） */
+.fgx-stars {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
+
+.fgx-loading {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #b3a895;
+  font-family: var(--font-serif);
+  font-size: 15px;
+  letter-spacing: 0.2em;
+  pointer-events: none;
+}
+
+.fgx-topbar {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 22px;
+  pointer-events: none;
+}
+.fgx-topbar > * { pointer-events: auto; }
+.fgx-topbar-left {
+  flex: 1;
+  max-width: 420px;
+  min-width: 0;
+}
+.fgx-topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+.fgx-reset {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-family: var(--font-sans);
+  color: #d8ccab;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 999px;
+  padding: 5px 14px;
+  cursor: pointer;
+}
+.fgx-reset:hover { background: rgba(255, 255, 255, 0.16); color: #fff; }
+
+/* 星图搜索框 */
+.fgx-search-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: rgba(20, 17, 14, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  padding: 0 14px;
+  backdrop-filter: blur(8px);
+  transition: all var(--duration-fast) var(--ease-ink);
+}
+.fgx-search-wrap:focus-within {
+  border-color: rgba(255, 200, 150, 0.4);
+  background: rgba(20, 17, 14, 0.85);
+  box-shadow: 0 0 0 3px rgba(255, 200, 150, 0.08);
+}
+.fgx-search-icon {
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 15px;
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+.fgx-search-input {
+  flex: 1;
+  min-width: 0;
+  padding: 9px 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 14px;
+  font-family: var(--font-sans);
+  color: #f5efe0;
+}
+.fgx-search-input::placeholder {
+  color: rgba(255, 255, 255, 0.35);
+}
+.fgx-search-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  max-height: 320px;
+  overflow-y: auto;
+  background: rgba(20, 17, 14, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-md);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+  z-index: 100;
+  padding: 4px;
+}
+.fgx-search-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background var(--duration-fast);
+}
+.fgx-search-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+.fgx-search-name {
+  font-family: var(--font-serif);
+  font-size: 14px;
+  color: #fbf6ec;
+  font-weight: 500;
+}
+.fgx-search-meta {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.4);
+  font-family: var(--font-sans);
+  flex-shrink: 0;
+}
+
+/* 选中人物信息：无面板底色，立绘贴左下角、文字直接悬浮在星空之上 */
+.fgx-focus {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  z-index: 10;
+  --idc: #f5efe0;
+  pointer-events: auto;
+}
+/* 立绘：70% 页高、贴左下角、半透明 + 四周羽化蒙版消除硬边 + 缓慢浮动，悬浮宇宙感 */
+.fgx-focus-portrait {
+  display: block;
+  height: 70vh;
+  width: auto;
+  max-width: 46vw;
+  object-fit: contain;
+  object-position: bottom left;
+  opacity: 0.66;
+  -webkit-mask-image: radial-gradient(ellipse 72% 86% at 50% 46%, #000 52%, transparent 97%);
+  mask-image: radial-gradient(ellipse 72% 86% at 50% 46%, #000 52%, transparent 97%);
+  filter: drop-shadow(0 0 28px rgba(110, 130, 220, 0.28));
+  animation:
+    fgx-portrait-in 0.7s ease both,
+    fgx-portrait-float 7s ease-in-out 0.7s infinite;
+}
+@keyframes fgx-portrait-in {
+  from { opacity: 0; transform: translateY(14px) scale(0.97); }
+  to { opacity: 0.66; transform: translateY(0) scale(1); }
+}
+@keyframes fgx-portrait-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-9px); }
+}
+/* 文字信息叠在立绘底部左下角上方 */
+.fgx-focus-info {
+  position: absolute;
+  left: 22px;
+  bottom: 28px;
+  z-index: 1;
+  width: 300px;
+  max-width: 46vw;
+}
+.fgx-focus-name {
+  display: block;
+  font-family: var(--font-serif);
+  font-size: 24px;
+  font-weight: 700;
+  color: #fbf6ec;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.85);
+}
+.fgx-focus-meta {
+  display: block;
+  font-size: 12px;
+  color: #b0a692;
+  font-family: var(--font-sans);
+  margin-top: 2px;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.8);
+}
+.fgx-focus-stars {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 6px;
+  font-size: 15px;
+  color: #f5c542;
+  letter-spacing: 1px;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.8);
+}
+.fgx-focus-degree {
+  font-size: 11px;
+  color: #9a8f7d;
+  font-family: var(--font-sans);
+  letter-spacing: 0;
+}
+.fgx-focus-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 10px;
+  font-size: 12px;
+  font-family: var(--font-sans);
+  color: #f5c98a;
+  text-decoration: none;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.8);
+  transition: color var(--duration-fast);
+}
+.fgx-focus-link:hover { color: #fff; }
+.fgx-focus-link i { font-size: 13px; }
+
+.fgx-legend {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  z-index: 10;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 22px;
+  background: linear-gradient(transparent, rgba(2, 3, 7, 0.8));
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.4);
+  font-family: var(--font-sans);
+  pointer-events: none;
+  justify-content: flex-end;
+}
+.fgx-legend-hint { opacity: 0.7; }
+.fgx-legend-desc { opacity: 0.55; margin-right: auto; }
+
+@media (max-width: 768px) {
+  .fgx-focus-portrait { height: 60vh; max-width: 72vw; }
+  .fgx-focus-info { left: 16px; bottom: 78px; width: 210px; max-width: 72vw; }
+  .fgx-legend-hint { display: none; }
+  .fgx-legend-desc { font-size: 11px; }
+}

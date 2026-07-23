@@ -1,0 +1,500 @@
+/* === Search Page === */
+.search-page {
+  min-height: 100vh;
+  padding-top: 56px;
+  background: var(--bg);
+}
+
+.search-page-content {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: var(--space-md) var(--space-lg) var(--space-xl);
+}
+
+.search-page-title {
+  font-family: var(--font-serif);
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  color: var(--ink);
+  margin-bottom: var(--space-sm);
+  text-align: center;
+}
+
+/* === SearchBar === */
+.search-bar {
+  display: flex;
+  gap: var(--space-sm);
+  margin: 0 auto var(--space-lg);
+  max-width: 600px;
+  box-sizing: border-box;
+}
+
+.search-bar-input-wrap {
+  flex: 1;
+  min-width: 0;
+}
+
+.search-bar-input,
+.search-bar-select,
+.search-bar-submit {
+  box-sizing: border-box;
+  height: 44px;
+}
+
+.search-bar-input {
+  width: 100%;
+  padding: 0 1rem;
+  border: 1px solid var(--rule);
+  background: rgba(255, 255, 255, 0.5);
+  font-family: var(--font-serif);
+  font-size: 1rem;
+  color: var(--ink);
+  transition: border-color var(--duration-normal) ease;
+}
+
+.search-bar-input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+/* === 自定义下拉 === */
+.search-bar-dropdown {
+  position: relative;
+}
+
+.search-bar-select {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0 1rem;
+  min-width: 120px;
+  border: 1px solid var(--rule);
+  background: rgba(255, 255, 255, 0.7);
+  font-family: var(--font-serif);
+  font-size: 0.9rem;
+  color: var(--ink);
+  cursor: pointer;
+  transition: all var(--duration-normal) ease;
+  white-space: nowrap;
+}
+
+.search-bar-select:hover {
+  border-color: var(--accent);
+}
+
+.search-bar-select.open {
+  border-color: var(--accent);
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.search-bar-select-label {
+  flex: 1;
+}
+
+.search-bar-select-arrow {
+  transition: transform var(--duration-normal) ease;
+  color: var(--muted);
+}
+
+.search-bar-select-arrow.up {
+  transform: rotate(180deg);
+}
+
+.search-bar-options {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  list-style: none;
+  max-height: 320px;
+  overflow-y: auto;
+  border: 1px solid var(--rule);
+  background: var(--bg);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  z-index: 50;
+  padding: 4px 0;
+}
+
+.search-bar-option {
+  padding: 0.5rem 1rem;
+  font-family: var(--font-serif);
+  font-size: 0.9rem;
+  color: var(--ink-light);
+  cursor: pointer;
+  transition: all var(--duration-fast) ease;
+}
+
+.search-bar-option:hover {
+  background: rgba(194, 58, 43, 0.06);
+  color: var(--accent);
+}
+
+.search-bar-option.selected {
+  background: rgba(194, 58, 43, 0.1);
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.search-bar-submit {
+  padding: 0 1.5rem;
+  border: 1px solid var(--ink);
+  background: var(--ink);
+  color: var(--bg);
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  letter-spacing: 0.2em;
+  cursor: pointer;
+  transition: all var(--duration-normal) ease;
+}
+
+.search-bar-submit:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+/* === 二十四史入口网格 === */
+.search-books-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: var(--space-md);
+  margin-top: var(--space-lg);
+}
+
+.search-book-card {
+  padding: var(--space-md);
+  border: 1px solid var(--rule);
+  background: rgba(255, 255, 255, 0.3);
+  transition: all var(--duration-normal) ease;
+}
+
+.search-book-card.active {
+  cursor: pointer;
+  border-color: var(--accent);
+}
+
+.search-book-card.active:hover {
+  background: rgba(194, 58, 43, 0.05);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.search-book-card.planned {
+  opacity: 0.4;
+}
+
+.search-book-name {
+  font-family: var(--font-serif);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: var(--space-xs);
+}
+
+.search-book-card.active .search-book-name {
+  color: var(--accent);
+}
+
+.search-book-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: var(--space-sm);
+}
+
+.search-book-dynasty {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.search-book-author {
+  font-size: 0.7rem;
+  color: var(--rule);
+}
+
+.search-book-status {
+  font-size: 0.7rem;
+  letter-spacing: 0.15em;
+  color: var(--muted);
+}
+
+.search-book-card.active .search-book-status {
+  color: var(--accent);
+}
+
+/* === ResultList === */
+.search-results {
+  list-style: none;
+}
+
+.search-results-loading,
+.search-results-empty {
+  text-align: center;
+  padding: var(--space-xl);
+  color: var(--muted);
+  font-size: 0.9rem;
+  letter-spacing: 0.1em;
+}
+
+.search-result-item {
+  padding: var(--space-lg) 0;
+  border-bottom: 1px solid var(--rule);
+  cursor: pointer;
+  transition: background var(--duration-fast) ease;
+}
+
+.search-result-item:hover {
+  background: rgba(232, 224, 212, 0.3);
+}
+
+.search-result-meta {
+  display: flex;
+  gap: var(--space-sm);
+  align-items: baseline;
+  margin-bottom: var(--space-sm);
+}
+
+.search-result-book {
+  font-family: var(--font-serif);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: 0.1em;
+}
+
+.search-result-chapter {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.search-result-snippet {
+  font-family: var(--font-serif);
+  font-size: 0.95rem;
+  line-height: 2;
+  color: var(--ink-light);
+  margin-bottom: var(--space-sm);
+}
+
+.search-result-snippet em {
+  color: var(--accent);
+  font-style: normal;
+  font-weight: 700;
+}
+
+.search-result-id {
+  font-family: var(--font-sans);
+  font-size: 0.7rem;
+  color: var(--rule);
+  letter-spacing: 0.05em;
+}
+
+/* === Pagination === */
+.search-pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-xl) 0;
+}
+
+.search-pagination button {
+  padding: 0.5rem 1.2rem;
+  border: 1px solid var(--rule);
+  font-size: 0.85rem;
+  color: var(--ink-light);
+  transition: all var(--duration-normal) ease;
+}
+
+.search-pagination button:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.search-pagination button:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.search-pagination-info {
+  font-size: 0.8rem;
+  color: var(--muted);
+  letter-spacing: 0.1em;
+}
+
+/* === PassageView (TextPage) === */
+.text-page {
+  min-height: 100vh;
+  padding-top: 56px;
+  background: var(--bg);
+}
+
+.text-page-content {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: var(--space-xl) var(--space-lg);
+}
+
+.text-page-back {
+  display: inline-block;
+  margin-bottom: var(--space-lg);
+  font-size: 0.85rem;
+  color: var(--muted);
+  letter-spacing: 0.1em;
+  transition: color var(--duration-normal) ease;
+}
+
+.text-page-back:hover {
+  color: var(--ink);
+}
+
+.text-page-nav {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-md);
+  margin-top: var(--space-xl);
+  padding-top: var(--space-lg);
+  border-top: 1px solid var(--rule);
+}
+
+.text-page-nav button {
+  padding: 0.5rem 1.2rem;
+  border: 1px solid var(--rule);
+  font-size: 0.85rem;
+  color: var(--ink-light);
+  transition: all var(--duration-normal) ease;
+}
+
+.text-page-nav button:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.text-page-nav button:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.passage-view {
+  margin-top: var(--space-lg);
+}
+
+.passage-view-toggles {
+  display: flex;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-lg);
+}
+
+.passage-toggle {
+  padding: 0.4rem 1rem;
+  border: 1px solid var(--rule);
+  font-size: 0.8rem;
+  color: var(--muted);
+  letter-spacing: 0.1em;
+  transition: all var(--duration-normal) ease;
+}
+
+.passage-toggle.active {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.passage-view-columns {
+  display: flex;
+  gap: var(--space-xl);
+}
+
+.passage-column {
+  flex: 1;
+  min-width: 0;
+}
+
+.passage-column-annotation {
+  border-left: 1px solid var(--rule);
+  padding-left: var(--space-lg);
+}
+
+.passage-column-vernacular {
+  border-left: 1px solid var(--rule);
+  padding-left: var(--space-lg);
+}
+
+.passage-text {
+  font-family: var(--font-serif);
+  font-size: 1.05rem;
+  line-height: 2.2;
+  color: var(--ink);
+  letter-spacing: 0.05em;
+}
+
+.passage-gloss-term {
+  background: rgba(194, 58, 43, 0.1);
+  color: var(--accent);
+  cursor: help;
+  border-bottom: 1px dashed var(--accent);
+}
+
+.passage-glosses {
+  margin-top: var(--space-xl);
+  padding-top: var(--space-lg);
+  border-top: 1px solid var(--rule);
+}
+
+.passage-glosses-title {
+  font-family: var(--font-serif);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: var(--space-md);
+}
+
+.passage-glosses-list {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-sm) var(--space-lg);
+}
+
+.passage-gloss-item {
+  display: flex;
+  gap: var(--space-sm);
+}
+
+.passage-gloss-item dt {
+  font-family: var(--font-serif);
+  font-weight: 700;
+  color: var(--accent);
+  white-space: nowrap;
+}
+
+.passage-gloss-item dd {
+  font-size: 0.85rem;
+  color: var(--ink-light);
+  line-height: 1.8;
+}
+
+/* === Responsive === */
+@media (max-width: 768px) {
+  .search-page-content,
+  .text-page-content {
+    padding: var(--space-lg) var(--space-md);
+  }
+  .search-bar {
+    flex-wrap: wrap;
+  }
+  .search-bar-input-wrap {
+    flex: 1 1 100%;
+  }
+  .passage-view-columns {
+    flex-direction: column;
+    gap: var(--space-lg);
+  }
+  .passage-column-annotation,
+  .passage-column-vernacular {
+    border-left: none;
+    border-top: 1px solid var(--rule);
+    padding-left: 0;
+    padding-top: var(--space-md);
+  }
+  .passage-glosses-list {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <radialGradient id="sealBg" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#c42f1e"/>
+      <stop offset="70%" stop-color="#a02418"/>
+      <stop offset="100%" stop-color="#7a1a10"/>
+    </radialGradient>
+    <radialGradient id="ringGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#f5ede0" stop-opacity="0"/>
+      <stop offset="60%" stop-color="#f0d060" stop-opacity="0.2"/>
+      <stop offset="85%" stop-color="#d4af37" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#8b6914" stop-opacity="0.1"/>
+    </radialGradient>
+    <filter id="sealTexture">
+      <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="3" result="noise"/>
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="1.5" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+    <filter id="goldGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- 印章外方 -->
+  <rect x="10" y="10" width="180" height="180" rx="12" ry="12" 
+        fill="url(#sealBg)" filter="url(#sealTexture)"/>
+  
+  <!-- 内圈 - 时空环 -->
+  <circle cx="100" cy="100" r="72" fill="none" stroke="url(#ringGlow)" stroke-width="10"/>
+  
+  <!-- 金色内环 -->
+  <circle cx="100" cy="100" r="72" fill="none" stroke="#d4af37" 
+          stroke-width="2" opacity="0.8" filter="url(#goldGlow)"/>
+  
+  <!-- 旋转的螺旋纹 - 虫洞效果 -->
+  <g opacity="0.6" filter="url(#goldGlow)">
+    <path d="M 100 30 
+             C 135 33, 162 60, 162 100 
+             C 162 140, 135 167, 100 170
+             C 65 167, 38 140, 38 100
+             C 38 62, 62 30, 100 30" 
+          fill="none" stroke="#f0d060" stroke-width="1" stroke-dasharray="3,6"/>
+    
+    <path d="M 100 48 
+             C 128 50, 148 72, 148 100 
+             C 148 130, 128 150, 100 152
+             C 72 150, 52 128, 52 100
+             C 52 72, 72 48, 100 48" 
+          fill="none" stroke="#d4af37" stroke-width="0.8" stroke-dasharray="2,5"/>
+  </g>
+  
+  <!-- 中心"穿"字 - 篆书风格 -->
+  <text x="100" y="100" text-anchor="middle" dominant-baseline="central"
+        font-family="'STKaiti', 'KaiTi', 'Ma Shan Zheng', serif"
+        font-size="62" fill="#f5ede0" font-weight="bold"
+        style="letter-spacing: 0;">
+    穿
+  </text>
+  
+  <!-- 中心小孔 - 奇点 -->
+  <circle cx="100" cy="100" r="4" fill="#1a0a08" opacity="0.8"/>
+  
+  <!-- 印章边角装饰 -->
+  <path d="M 15 15 L 25 15 M 15 15 L 15 25" stroke="#f5ede0" stroke-width="2" opacity="0.5"/>
+  <path d="M 185 15 L 175 15 M 185 15 L 185 25" stroke="#f5ede0" stroke-width="2" opacity="0.5"/>
+  <path d="M 15 185 L 25 185 M 15 185 L 15 175" stroke="#f5ede0" stroke-width="2" opacity="0.5"/>
+  <path d="M 185 185 L 175 185 M 185 185 L 185 175" stroke="#f5ede0" stroke-width="2" opacity="0.5"/>
+</svg>

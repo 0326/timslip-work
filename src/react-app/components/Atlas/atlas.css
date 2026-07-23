@@ -1,0 +1,580 @@
+/* === 舆图 Atlas === */
+
+.atlas-page {
+  position: relative;
+  height: calc(100vh - 56px);
+  overflow: hidden;
+  background: var(--bg-dark);
+}
+
+.atlas-page-error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  font-family: var(--font-serif);
+}
+
+.atlas-loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  font-family: var(--font-serif);
+  letter-spacing: 0.3em;
+  pointer-events: none;
+}
+
+.atlas-map-wrap,
+.atlas-map {
+  position: absolute;
+  inset: 0;
+}
+
+/* 纸面暗角：给地图边缘一圈淡淡的宣纸晕影，聚焦中央 */
+.atlas-map-wrap::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  background: radial-gradient(
+    ellipse 78% 78% at 50% 46%,
+    transparent 60%,
+    rgba(120, 104, 74, 0.12) 100%
+  );
+}
+
+.atlas-map .maplibregl-ctrl-group {
+  background: rgba(245, 240, 232, 0.9);
+  box-shadow: 0 1px 4px rgba(26, 26, 26, 0.15);
+  border-radius: var(--radius-md);
+}
+
+/* === 标注层 === */
+.atlas-overlay {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.atlas-marks {
+  position: absolute;
+  inset: 0;
+  animation: atlas-fade-in 0.45s var(--ease-ink);
+}
+
+@keyframes atlas-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.atlas-regime-label {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  font-family: var(--font-serif);
+  font-weight: 700;
+  letter-spacing: 0.35em;
+  text-shadow:
+    0 0 6px rgba(245, 240, 232, 0.95),
+    0 0 2px rgba(245, 240, 232, 0.95);
+  cursor: pointer;
+  pointer-events: auto;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.atlas-regime-label.kind-dynasty {
+  font-size: 1.5rem;
+}
+
+.atlas-regime-label.kind-power {
+  font-size: 1.05rem;
+}
+
+.atlas-regime-label.kind-tribe {
+  font-size: 0.85rem;
+  font-weight: 400;
+  letter-spacing: 0.5em;
+  opacity: 0.75;
+}
+
+.atlas-capital {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  font-family: var(--font-serif);
+  font-size: 0.72rem;
+  color: var(--ink-light);
+  text-shadow: 0 0 4px rgba(245, 240, 232, 0.95);
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.atlas-capital i {
+  font-style: normal;
+  font-size: 0.7rem;
+  color: var(--accent);
+  line-height: 1;
+}
+
+/* 人物印章标记 */
+.atlas-figure {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  pointer-events: auto;
+  padding: 2px;
+}
+
+.atlas-figure i {
+  font-style: normal;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  flex: none;
+  background: var(--accent);
+  color: #f5f0e8;
+  font-family: var(--font-serif);
+  font-size: 0.8rem;
+  border-radius: 3px;
+  box-shadow: 0 1px 3px rgba(26, 26, 26, 0.35);
+  transition: transform var(--duration-fast) var(--ease-ink);
+}
+
+.atlas-figure span {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  font-family: var(--font-serif);
+  font-size: 0.78rem;
+  line-height: 1.3;
+  color: var(--ink);
+  text-shadow: 0 0 4px rgba(245, 240, 232, 0.95);
+  white-space: nowrap;
+}
+
+.atlas-figure span em {
+  display: none;
+  font-style: normal;
+  font-size: 0.68rem;
+  color: var(--muted);
+}
+
+.atlas-figure:hover i {
+  transform: scale(1.15);
+}
+
+.atlas-figure:hover span em {
+  display: block;
+}
+
+/* === 信息卡 === */
+.atlas-panel {
+  position: absolute;
+  top: var(--space-md);
+  left: var(--space-md);
+  width: min(300px, calc(100vw - 32px));
+  padding: var(--space-md) var(--space-lg);
+  background: rgba(245, 240, 232, 0.92);
+  backdrop-filter: blur(4px);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-md);
+  box-shadow: 0 2px 12px rgba(26, 26, 26, 0.08);
+}
+
+.atlas-panel-close {
+  position: absolute;
+  top: 6px;
+  right: 10px;
+  font-size: 1.1rem;
+  color: var(--muted);
+}
+
+.atlas-panel-close:hover {
+  color: var(--ink);
+}
+
+.atlas-panel-title {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-sm);
+}
+
+.atlas-panel-title h2 {
+  font-family: var(--font-serif);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1.3;
+}
+
+.atlas-panel-swatch {
+  width: 12px;
+  height: 12px;
+  flex: none;
+  align-self: center;
+  border-radius: 2px;
+  opacity: 0.75;
+}
+
+.atlas-panel-kind {
+  font-size: 0.75rem;
+  color: var(--muted);
+  letter-spacing: 0.1em;
+}
+
+.atlas-panel-sub {
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+.atlas-panel-blurb,
+.atlas-panel-note {
+  font-family: var(--font-serif);
+  font-size: 0.88rem;
+  color: var(--ink-light);
+  line-height: 1.7;
+  margin-top: var(--space-sm);
+}
+
+.atlas-panel-caption {
+  font-size: 0.72rem;
+  color: var(--muted);
+  margin-top: var(--space-md);
+  letter-spacing: 0.2em;
+}
+
+.atlas-panel-books {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs) var(--space-sm);
+  margin-top: var(--space-sm);
+}
+
+.atlas-book-chip {
+  font-family: var(--font-serif);
+  font-size: 0.8rem;
+  color: var(--accent);
+  transition: color var(--duration-fast) var(--ease-ink);
+}
+
+.atlas-book-chip:hover {
+  color: var(--accent-light);
+}
+
+/* === 同期史册人物 === */
+.atlas-period {
+  margin-top: var(--space-sm);
+  border-top: 1px solid var(--rule);
+  padding-top: var(--space-sm);
+}
+
+.atlas-period-list {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px 6px;
+  margin-top: var(--space-sm);
+  max-height: 168px;
+  overflow-y: auto;
+}
+
+.atlas-period-list button {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
+  padding: 3px 8px;
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.35);
+  font-family: var(--font-serif);
+  transition: all var(--duration-fast) var(--ease-ink);
+}
+
+.atlas-period-list button:hover {
+  border-color: var(--accent);
+  background: rgba(194, 58, 43, 0.06);
+}
+
+.atlas-period-name {
+  font-size: 0.86rem;
+  color: var(--ink);
+}
+
+.atlas-period-tag {
+  font-size: 0.62rem;
+  color: var(--accent);
+  letter-spacing: 0.05em;
+}
+
+.atlas-period-years {
+  font-size: 0.62rem;
+  color: var(--muted);
+}
+
+/* === 时间轴 === */
+.atlas-scrubber {
+  position: absolute;
+  left: 50%;
+  bottom: var(--space-md);
+  transform: translateX(-50%);
+  width: min(920px, calc(100vw - 32px));
+  padding: var(--space-sm) var(--space-lg) var(--space-md);
+  background: rgba(245, 240, 232, 0.92);
+  backdrop-filter: blur(4px);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-md);
+  box-shadow: 0 2px 12px rgba(26, 26, 26, 0.1);
+}
+
+.atlas-scrubber-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-xs);
+}
+
+.atlas-scrubber-btn {
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.72rem;
+  color: var(--ink-light);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-md);
+  transition: all var(--duration-fast) var(--ease-ink);
+}
+
+.atlas-scrubber-btn:hover:not(:disabled) {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.atlas-scrubber-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.atlas-scrubber-now {
+  font-family: var(--font-serif);
+  font-weight: 700;
+  color: var(--ink);
+  margin-left: var(--space-xs);
+}
+
+.atlas-scrubber-now em {
+  font-style: normal;
+  font-weight: 400;
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-left: var(--space-sm);
+}
+
+/* 移动端轨道可横向滚动 */
+.atlas-scrubber-scroll {
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+}
+
+.atlas-scrubber-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.atlas-scrubber-track {
+  position: relative;
+  height: 52px;
+  cursor: pointer;
+  touch-action: none;
+}
+
+.atlas-scrubber-frame-tag {
+  color: var(--accent) !important;
+  opacity: 0.85;
+}
+
+/* 朝代段：顶部标签 + 分隔带 */
+.atlas-scrubber-seg {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  border-left: 1px solid var(--rule);
+  pointer-events: none;
+}
+
+.atlas-scrubber-seg:first-child {
+  border-left: none;
+}
+
+.atlas-scrubber-seg span {
+  display: block;
+  padding-top: 2px;
+  font-family: var(--font-serif);
+  font-size: 0.7rem;
+  color: var(--muted);
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  transition: color var(--duration-fast) var(--ease-ink);
+}
+
+.atlas-scrubber-seg.active {
+  background: rgba(194, 58, 43, 0.05);
+}
+
+.atlas-scrubber-seg.active span {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.atlas-scrubber-rail,
+.atlas-scrubber-fill {
+  position: absolute;
+  top: 34px;
+  left: 0;
+  height: 2px;
+  background: var(--rule);
+  width: 100%;
+  pointer-events: none;
+}
+
+.atlas-scrubber-fill {
+  background: var(--accent);
+  transition: width var(--duration-normal) var(--ease-ink);
+}
+
+/* 帝王节点 */
+.atlas-scrubber-node {
+  position: absolute;
+  top: 25px;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 17px;
+  height: 20px;
+}
+
+.atlas-scrubber-node i {
+  width: 7px;
+  height: 7px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--bg);
+  border: 1.5px solid var(--muted);
+  transition: all var(--duration-fast) var(--ease-ink);
+}
+
+.atlas-scrubber-node.period i {
+  border-radius: 1px;
+  transform: rotate(45deg);
+}
+
+.atlas-scrubber-node:hover i {
+  border-color: var(--accent);
+}
+
+.atlas-scrubber-node.active i {
+  background: var(--accent);
+  border-color: var(--accent);
+  transform: scale(1.45);
+}
+
+.atlas-scrubber-node.period.active i {
+  transform: rotate(45deg) scale(1.45);
+}
+
+/* 疆域换幅标记（细竖线，非交互） */
+.atlas-scrubber-mark {
+  position: absolute;
+  top: 30px;
+  width: 2px;
+  height: 12px;
+  transform: translateX(-50%);
+  background: var(--rule);
+  pointer-events: none;
+  border-radius: 1px;
+}
+
+.atlas-scrubber-mark.active {
+  background: var(--accent-light);
+}
+
+/* === 署名 === */
+.atlas-attribution {
+  position: absolute;
+  right: var(--space-sm);
+  bottom: 2px;
+  font-size: 0.62rem;
+  color: var(--muted);
+  opacity: 0.8;
+  pointer-events: none;
+  text-shadow: 0 0 3px rgba(245, 240, 232, 0.9);
+}
+
+/* === 移动端 === */
+@media (max-width: 768px) {
+  .atlas-panel {
+    top: var(--space-sm);
+    left: var(--space-sm);
+    width: min(240px, calc(100vw - 100px));
+    padding: var(--space-sm) var(--space-md);
+  }
+
+  .atlas-panel-title h2 {
+    font-size: 1.15rem;
+  }
+
+  .atlas-panel-blurb {
+    display: none;
+  }
+
+  .atlas-scrubber {
+    bottom: var(--space-sm);
+    padding: var(--space-xs) var(--space-md) var(--space-sm);
+  }
+
+  /* 轨道保持 560px 最小宽，靠 .atlas-scrubber-scroll 横向滚动 */
+  .atlas-scrubber-track {
+    height: 48px;
+  }
+
+  .atlas-regime-label.kind-dynasty {
+    font-size: 1.15rem;
+  }
+
+  .atlas-regime-label.kind-power {
+    font-size: 0.85rem;
+  }
+
+  .atlas-regime-label.kind-tribe {
+    font-size: 0.7rem;
+  }
+
+  .atlas-figure span,
+  .atlas-capital {
+    font-size: 0.68rem;
+  }
+
+  .atlas-attribution {
+    display: none;
+  }
+}

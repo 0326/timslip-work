@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <radialGradient id="bgGrad" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#0a0a0a"/>
+      <stop offset="70%" stop-color="#1a1510"/>
+      <stop offset="100%" stop-color="#2a2015"/>
+    </radialGradient>
+    <radialGradient id="accretion" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#c9a84c" stop-opacity="0"/>
+      <stop offset="60%" stop-color="#d4af37" stop-opacity="0.3"/>
+      <stop offset="75%" stop-color="#f0d060" stop-opacity="0.8"/>
+      <stop offset="85%" stop-color="#e8c547" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#b8860b" stop-opacity="0.1"/>
+    </radialGradient>
+    <linearGradient id="swirlGold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f0d060"/>
+      <stop offset="50%" stop-color="#d4af37"/>
+      <stop offset="100%" stop-color="#b8860b"/>
+    </linearGradient>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- 背景圆 -->
+  <circle cx="100" cy="100" r="98" fill="url(#bgGrad)"/>
+  
+  <!-- 吸积盘外环 -->
+  <circle cx="100" cy="100" r="90" fill="none" stroke="url(#accretion)" stroke-width="16" opacity="0.9"/>
+  
+  <!-- 旋转的阴阳鱼 - 阳鱼（白）-->
+  <path d="M 100 20 
+           A 40 40 0 0 1 100 100 
+           A 20 20 0 0 1 100 60 
+           A 20 20 0 0 0 100 100" 
+        fill="#f5ede0" opacity="0.95" filter="url(#glow)"/>
+  
+  <!-- 旋转的阴阳鱼 - 阴鱼（黑）-->
+  <path d="M 100 180 
+           A 40 40 0 0 1 100 100 
+           A 20 20 0 0 1 100 140 
+           A 20 20 0 0 0 100 100" 
+        fill="#0a0a0a" opacity="0.95"/>
+  
+  <!-- 阳鱼眼 - 金色 -->
+  <circle cx="100" cy="60" r="5" fill="url(#swirlGold)" filter="url(#glow)"/>
+  
+  <!-- 阴鱼眼 - 深金 -->
+  <circle cx="100" cy="140" r="5" fill="#8b6914"/>
+  
+  <!-- 漩涡光环 - 围绕太极的螺旋 -->
+  <path d="M 100 25 
+           C 140 30, 165 60, 165 100 
+           C 165 140, 140 170, 100 175
+           C 60 170, 35 140, 35 100
+           C 35 65, 55 35, 100 25" 
+        fill="none" stroke="url(#swirlGold)" stroke-width="1.5" 
+        opacity="0.6" filter="url(#glow)"/>
+  
+  <!-- 内圈螺旋 -->
+  <path d="M 100 45 
+           C 125 48, 145 70, 145 100 
+           C 145 130, 125 152, 100 155
+           C 75 152, 55 130, 55 100
+           C 55 75, 70 50, 100 45" 
+        fill="none" stroke="#d4af37" stroke-width="1" 
+        opacity="0.4"/>
+  
+  <!-- 中心黑洞奇点 -->
+  <circle cx="100" cy="100" r="3" fill="#000"/>
+  <circle cx="100" cy="100" r="6" fill="none" stroke="#d4af37" stroke-width="0.5" opacity="0.5"/>
+</svg>

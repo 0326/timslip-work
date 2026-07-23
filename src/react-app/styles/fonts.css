@@ -1,0 +1,8 @@
+/* Ma Shan Zheng 毛笔字体 — 子集化，仅含二十四史书名用字 */
+@font-face {
+  font-family: 'Ma Shan Zheng';
+  src: url('/fonts/MaShanZheng-subset.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
