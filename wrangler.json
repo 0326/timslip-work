@@ -41,7 +41,8 @@
 		{
 			"binding": "ASSETS_BUCKET",
 			"bucket_name": "timslip-assets",
-			"preview_bucket_name": "timslip-assets-preview"
+			"preview_bucket_name": "timslip-assets",
+			"remote": true
 		}
 	],
 	"images": {
