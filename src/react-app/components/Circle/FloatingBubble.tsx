@@ -19,7 +19,7 @@ export function FloatingBubble() {
   const [lineIndex, setLineIndex] = useState(0);
   const [charCount, setCharCount] = useState(0);
   const [phase, setPhase] = useState<'typing' | 'display' | 'pause'>('typing');
-  const timerRef = useRef<ReturnType<typeof setTimeout>>();
+  const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   const currentLine = LINES[lineIndex];
 
