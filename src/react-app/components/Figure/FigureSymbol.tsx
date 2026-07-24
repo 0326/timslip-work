@@ -1,5 +1,5 @@
-// 人物身份符号占位（PRD §5.2）。在真实头像缺失/加载失败时显示，按 avatar_icon 取符号、
-// 按 identity 取配色。真实头像到位后由 <img> 覆盖，本组件作底层兜底，永不空。
+// 人物身份剪影占位。在真实头像缺失/加载失败时显示，按 identity 取对应身份剪影图。
+// 真实头像到位后由 <img> 覆盖，本组件作底层兜底，永不空。
 
 const IDENTITY_COLOR: Record<string, string> = {
   帝王: "#c23a2b", // 朱砂
@@ -10,57 +10,41 @@ const IDENTITY_COLOR: Record<string, string> = {
   后妃: "#9a4f63", // 绛
   游侠: "#8a6a32", // 黄褐
   异族: "#7a5638", // 大地褐
+  宦官: "#4a5a4a", // 深苍
 };
 
-// viewBox 0 0 48 48，简笔国风符号
-const ICONS: Record<string, React.ReactNode> = {
-  crown: <path d="M8 34h32l-3 6H11l-3-6zM8 34l-2-16 9 7 9-13 9 13 9-7-2 16H8z" />,
-  sword: (
-    <g>
-      <path d="M24 4l4 28h-8l4-28z" />
-      <path d="M14 32h20v4H14z" />
-      <path d="M22 36h4v8h-4z" />
-    </g>
-  ),
-  scroll: (
-    <g>
-      <path d="M12 8h24v32H12z" fill="none" strokeWidth="3" />
-      <path d="M17 17h14M17 24h14M17 31h9" strokeWidth="2.5" fill="none" />
-    </g>
-  ),
-  chess: (
-    <g>
-      <circle cx="24" cy="24" r="16" fill="none" strokeWidth="3" />
-      <path d="M24 12v24M12 24h24" strokeWidth="2.5" />
-    </g>
-  ),
-  dagger: (
-    <g>
-      <path d="M24 4l3 24h-6l3-24z" />
-      <path d="M16 28h16v3H16z" />
-      <path d="M23 31h2v13h-2z" />
-    </g>
-  ),
-  lantern: (
-    <g>
-      <path d="M24 6v4M18 10h12" strokeWidth="2.5" />
-      <ellipse cx="24" cy="26" rx="11" ry="14" fill="none" strokeWidth="3" />
-      <path d="M24 40v3" strokeWidth="2.5" />
-    </g>
-  ),
-  horse: (
-    <path d="M14 40c0-12 4-18 10-22-2-3-1-7 2-9 1 4 4 5 7 6 4 2 6 6 6 13 0 5-2 9-5 12h-5c2-3 3-6 3-10 0-5-3-8-7-7-5 1-6 8-6 17h-5z" />
-  ),
-  person: (
-    <g>
-      <circle cx="24" cy="16" r="8" fill="none" strokeWidth="3" />
-      <path d="M10 42c0-9 6-14 14-14s14 5 14 14" fill="none" strokeWidth="3" />
-    </g>
-  ),
+// 身份 → 剪影图路径
+const IDENTITY_SILHOUETTE: Record<string, string> = {
+  帝王: "/assets/silhouettes/diwang.jpg",
+  将相: "/assets/silhouettes/jiangxiang.jpg",
+  文人: "/assets/silhouettes/wenren.jpg",
+  谋士: "/assets/silhouettes/moushi.jpg",
+  刺客: "/assets/silhouettes/cike.jpg",
+  后妃: "/assets/silhouettes/houfei.jpg",
+  游侠: "/assets/silhouettes/youxia.jpg",
+  异族: "/assets/silhouettes/yizu.jpg",
+  宦官: "/assets/silhouettes/huanguan.jpg",
 };
+
+// 小量身份 → 主身份映射（用于 fallback）
+const IDENTITY_FALLBACK: Record<string, string> = {
+  將相: "将相", // 繁体变体
+  佞幸: "宦官",
+  外戚: "将相",
+  异人: "游侠",
+  恩幸: "后妃",
+  隐逸: "文人",
+};
+
+function getSilhouettePath(identity?: string | null): string {
+  if (!identity) return IDENTITY_SILHOUETTE["文人"];
+  if (IDENTITY_SILHOUETTE[identity]) return IDENTITY_SILHOUETTE[identity];
+  const fallback = IDENTITY_FALLBACK[identity];
+  if (fallback && IDENTITY_SILHOUETTE[fallback]) return IDENTITY_SILHOUETTE[fallback];
+  return IDENTITY_SILHOUETTE["文人"];
+}
 
 export function FigureSymbol({
-  icon,
   identity,
   className,
 }: {
@@ -69,16 +53,22 @@ export function FigureSymbol({
   className?: string;
 }) {
   const color = (identity && IDENTITY_COLOR[identity]) || "#8a7e6e";
-  const node = (icon && ICONS[icon]) || ICONS.person;
+  const silhouettePath = getSilhouettePath(identity);
   return (
     <div
       className={`figure-symbol${className ? " " + className : ""}`}
       style={{ ["--sym" as string]: color }}
       aria-hidden="true"
     >
-      <svg viewBox="0 0 48 48" stroke={color} fill={color} strokeLinejoin="round" strokeLinecap="round">
-        {node}
-      </svg>
+      <img
+        src={silhouettePath}
+        alt=""
+        className="figure-silhouette-img"
+        loading="lazy"
+        onError={(e) => {
+          (e.currentTarget as HTMLImageElement).style.display = "none";
+        }}
+      />
     </div>
   );
 }

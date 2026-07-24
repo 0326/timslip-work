@@ -14,6 +14,13 @@
 [data-identity="后妃"] { --idc: #b5607a; }
 [data-identity="游侠"] { --idc: #c08a32; }
 [data-identity="异族"] { --idc: #a9763f; }
+[data-identity="宦官"] { --idc: #5a6a5a; }
+[data-identity="將相"] { --idc: #4a6276; }
+[data-identity="佞幸"] { --idc: #5a6a5a; }
+[data-identity="外戚"] { --idc: #4a6276; }
+[data-identity="异人"] { --idc: #c08a32; }
+[data-identity="恩幸"] { --idc: #b5607a; }
+[data-identity="隐逸"] { --idc: #2e8b8b; }
 
 /* ============ 群英谱图鉴卡 ============ */
 .fg-card {
@@ -42,12 +49,14 @@
   background: radial-gradient(120% 120% at 30% 25%, color-mix(in srgb, var(--idc) 30%, #1e1a16), #141110);
 }
 .fg-card-art .figure-symbol { background: transparent; }
-.fg-card-art .figure-symbol svg {
-  width: 40%; height: 40%; opacity: 0.95;
-  filter: drop-shadow(0 0 12px color-mix(in srgb, var(--idc) 65%, transparent));
+.fg-card-art .figure-silhouette-img {
+  width: 100%; height: 100%; opacity: 0.9;
+  object-fit: cover;
+  mix-blend-mode: multiply;
+  filter: drop-shadow(0 0 12px color-mix(in srgb, var(--idc) 45%, transparent));
   transition: transform var(--duration-normal) var(--ease-ink);
 }
-.fg-card:hover .figure-symbol svg { transform: scale(1.12); }
+.fg-card:hover .figure-silhouette-img { transform: scale(1.06); }
 .fg-card-art img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .fg-card-badge {
   position: absolute; top: 8px; left: 8px;
@@ -157,11 +166,13 @@
 .fg-portrait .figure-symbol {
   background: transparent;
 }
-.fg-portrait .figure-symbol svg {
-  width: 46%;
-  height: 46%;
+.fg-portrait .figure-silhouette-img {
+  width: 100%;
+  height: 100%;
   opacity: 0.92;
-  filter: drop-shadow(0 0 14px color-mix(in srgb, var(--idc) 60%, transparent));
+  object-fit: cover;
+  mix-blend-mode: multiply;
+  filter: drop-shadow(0 0 14px color-mix(in srgb, var(--idc) 45%, transparent));
 }
 .fg-portrait img {
   position: absolute;
