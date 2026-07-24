@@ -11,6 +11,7 @@ const SearchPage = lazy(() => import("./pages/SearchPage"));
 const TextPage = lazy(() => import("./pages/TextPage"));
 const HubPage = lazy(() => import("./pages/HubPage"));
 const AboutPage = lazy(() => import("./pages/AboutPage"));
+const CirclePage = lazy(() => import("./pages/CirclePage"));
 const AtlasPage = lazy(() => import("./pages/AtlasPage"));
 const FigurePage = lazy(() => import("./pages/FigurePage"));
 const FigureDetailPage = lazy(() => import("./pages/FigureDetailPage"));
@@ -25,6 +26,7 @@ function usePreloadRoutes() {
       void import("./pages/TextPage");
       void import("./pages/HubPage");
       void import("./pages/AboutPage");
+      void import("./pages/CirclePage");
       void import("./pages/AtlasPage");
       void import("./pages/FigurePage");
       void import("./pages/FigureDetailPage");
@@ -79,6 +81,7 @@ function AnimatedRoutes() {
           <Route path="/figures/graph" element={<GraphRedirect />} />
           <Route path="/figures/:id" element={<FigureDetailPage />} />
           <Route path="/atlas" element={<AtlasPage />} />
+          <Route path="/circle" element={<CirclePage />} />
           <Route
             path="/about"
             element={<AboutPage />}

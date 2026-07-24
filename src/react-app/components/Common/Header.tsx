@@ -6,6 +6,7 @@ const NAV_LINKS = [
   { to: "/search", label: "兰台" },
   { to: "/figures", label: "人物" },
   { to: "/atlas", label: "舆图" },
+  { to: "/circle", label: "下载" },
   { to: "/about", label: "关于" },
 ];
 
@@ -14,6 +15,7 @@ const ROUTE_CHUNKS: Record<string, () => Promise<unknown>> = {
   "/search": () => import("../../pages/SearchPage"),
   "/figures": () => import("../../pages/FigurePage"),
   "/atlas": () => import("../../pages/AtlasPage"),
+  "/circle": () => import("../../pages/CirclePage"),
   "/about": () => import("../../pages/AboutPage"),
 };
 

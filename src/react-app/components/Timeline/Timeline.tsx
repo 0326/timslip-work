@@ -7,6 +7,7 @@ import { ImplosionCanvas } from "./ImplosionCanvas";
 import { RiverCanvas } from "./RiverCanvas";
 import { DynastyNode } from "./DynastyNode";
 import { Header } from "../Common/Header";
+import { FloatingBubble } from "../Circle/FloatingBubble";
 import "./timeline.css";
 
 const SLOT_WIDTH = 150;
@@ -379,6 +380,9 @@ export function Timeline({ data }: TimelineProps) {
       <div className={`portal-scroll-hint${showScrollHint ? "" : " hidden"}`}>
         滚动 · 拖动，逆流穿越历史
       </div>
+
+      {/* Floating Bubble - Circle Mini Program */}
+      <FloatingBubble />
 
       {/* Footer */}
       <div className="portal-footer-minimal">穿越·兰台 TIMESLIP.WORK &copy; 2026</div>

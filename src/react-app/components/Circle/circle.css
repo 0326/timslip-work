@@ -1,0 +1,406 @@
+/* === Circle Download Guide Page — Red Guofeng Comic Style (light body) === */
+
+/* --- Page --- */
+.circle-page {
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--ink);
+}
+
+.circle-page-content {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 48px 40px 64px;
+}
+
+/* --- Hero Banner (full-width, bleeds behind header) --- */
+.circle-hero {
+  position: relative;
+  width: 100%;
+  padding-top: 100px;
+  min-height: 400px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.circle-hero-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+  z-index: 0;
+}
+
+/* Dark gradient overlay for text readability */
+.circle-hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.2) 60%, rgba(0,0,0,0.7) 100%);
+  z-index: 1;
+  pointer-events: none;
+}
+
+.circle-hero-overlay {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 40px;
+  padding: 40px 60px;
+  max-width: 1000px;
+  width: 100%;
+}
+
+.circle-hero-text {
+  flex: 1;
+}
+
+.circle-hero-badge {
+  display: inline-block;
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #fff;
+  background: linear-gradient(135deg, #000000, #1a1918);
+  letter-spacing: 0.15em;
+  padding: 5px 16px;
+  border-radius: 20px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 16px rgba(90, 88, 88, 0.4);
+}
+
+.circle-hero-title {
+  font-family: var(--font-sans);
+  font-size: 3.8rem;
+  font-weight: 800;
+  color: #fff;
+  line-height: 1.25;
+  margin-bottom: 12px;
+  text-shadow: 0 2px 20px rgba(0,0,0,0.3);
+}
+
+.circle-hero-subtitle {
+  font-family: var(--font-sans);
+  font-size: 1.05rem;
+  color: rgba(255, 255, 255, 0.85);
+  line-height: 1.9;
+  margin-top: 8px;
+  font-weight: bold;
+  text-shadow: 0 1px 8px rgba(0,0,0,0.25);
+}
+
+.circle-hero-subtitle em {
+  font-style: normal;
+  color: #ffd700;
+  font-weight: 600;
+}
+
+.circle-hero-qr {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.circle-qr-wrap {
+  width: 148px;
+  height: 148px;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.2), 0 0 0 3px rgba(255,255,255,0.8);
+  background: #fff;
+}
+
+.circle-qr-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.circle-qr-hint {
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.7);
+  letter-spacing: 0.08em;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.3);
+}
+
+/* --- Section Title --- */
+.circle-section-title {
+  font-family: var(--font-sans);
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: 0.08em;
+  margin-bottom: 28px;
+  text-align: center;
+}
+
+/* --- Feature Grid --- */
+.circle-features {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 56px;
+}
+
+.circle-feature-card {
+  background: #fff;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  cursor: default;
+}
+
+.circle-feature-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 32px rgba(228, 67, 62, 0.12), 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.circle-feature-img {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  display: block;
+}
+
+.circle-feature-body {
+  padding: 20px 24px 24px;
+}
+
+.circle-feature-tag {
+  display: inline-block;
+  font-family: var(--font-sans);
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: #c23a2b;
+  letter-spacing: 0.1em;
+  padding: 3px 10px;
+  border-radius: 10px;
+  background: rgba(194, 58, 43, 0.08);
+  margin-bottom: 8px;
+}
+
+.circle-feature-name {
+  font-family: var(--font-sans);
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 6px;
+}
+
+.circle-feature-desc {
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+/* --- Bottom CTA --- */
+.circle-bottom-cta {
+  background: var(--bg-dark);
+  border-radius: 20px;
+  padding: 40px;
+  text-align: center;
+}
+
+.circle-bottom-cta-title {
+  font-family: var(--font-sans);
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 24px;
+}
+
+.circle-bottom-cta-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 40px;
+}
+
+.circle-bottom-qr {
+  width: 140px;
+  height: 140px;
+  border-radius: 14px;
+  object-fit: cover;
+  box-shadow: 0 4px 20px rgba(194, 58, 43, 0.12);
+}
+
+.circle-bottom-cta-text {
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  color: var(--muted);
+  line-height: 2.2;
+  text-align: left;
+}
+
+.circle-bottom-cta-text strong {
+  color: var(--accent);
+}
+
+/* ============================= */
+/* --- Floating Bubble --- */
+/* ============================= */
+.circle-float {
+  position: fixed;
+  bottom: 150px;
+  left: 1.5rem;
+  z-index: 35;
+  display: flex;
+  align-items: flex-end;
+  gap: 0;
+  cursor: pointer;
+  animation: circle-float-in 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) both,
+             circle-float-sway 5s ease-in-out 1.2s infinite;
+  transition: filter 0.3s ease;
+}
+
+.circle-float:hover {
+  animation-play-state: paused;
+  filter: brightness(1.1);
+}
+
+.circle-float-avatar {
+  width: 140px;
+  object-fit: contain;
+  position: relative;
+  z-index: 2;
+  filter: drop-shadow(0 2px 10px rgba(0,0,0,0.35));
+}
+
+.circle-float-bubble {
+  position: relative;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  border-radius: 16px;
+  padding: 11px 18px;
+  margin-bottom: 120px;
+  margin-left: -4px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.1);
+  border: none;
+  min-width: 170px;
+  max-width: 230px;
+  z-index: 1;
+}
+
+.circle-float-bubble::before {
+  content: '';
+  position: absolute;
+  left: 4px;
+  bottom: 10px;
+  width: 12px;
+  height: 12px;
+  background: rgba(255, 255, 255, 0.95);
+  transform: translate(-50%, 0) rotate(45deg);
+  z-index: -1;
+}
+
+.circle-float-bubble-text {
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
+  color: #3a3a3a;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+
+.circle-float-cursor {
+  display: inline-block;
+  width: 2px;
+  height: 0.9em;
+  background: #e8433e;
+  margin-left: 1px;
+  vertical-align: text-bottom;
+  animation: circle-blink 0.8s step-end infinite;
+}
+
+@keyframes circle-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+@keyframes circle-float-in {
+  from {
+    opacity: 0;
+    transform: translateY(30px) scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes circle-float-sway {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25% { transform: translateY(-5px) rotate(0.5deg); }
+  75% { transform: translateY(3px) rotate(-0.3deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .circle-float {
+    animation: none;
+    opacity: 1;
+  }
+}
+
+/* --- Responsive --- */
+@media (max-width: 768px) {
+  .circle-hero {
+    min-height: 280px;
+  }
+  .circle-hero-overlay {
+    flex-direction: column-reverse;
+    text-align: center;
+    padding: 28px 24px;
+    gap: 20px;
+  }
+  .circle-hero-title {
+    font-size: 2rem;
+  }
+  .circle-hero-subtitle {
+    font-size: 0.95rem;
+  }
+  .circle-page-content {
+    padding: 32px 20px 48px;
+  }
+  .circle-features {
+    grid-template-columns: 1fr 1fr;
+  }
+  .circle-bottom-cta {
+    padding: 28px 20px;
+  }
+  .circle-bottom-cta-row {
+    flex-direction: column;
+    gap: 20px;
+  }
+  .circle-bottom-cta-text {
+    text-align: center;
+  }
+  .circle-float {
+    left: 0.8rem;
+    bottom: 136px;
+  }
+  .circle-float-avatar {
+    width: 80px;
+    height: 102px;
+  }
+  .circle-float-bubble {
+    min-width: 150px;
+    max-width: 190px;
+    padding: 9px 14px;
+  }
+  .circle-float-bubble-text {
+    font-size: 0.76rem;
+  }
+}
