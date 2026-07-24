@@ -186,8 +186,9 @@ export default function AuthModal({ open, onClose, initialMode = "login" }: Auth
 					</div>
 
 					{mode === "register" && (
-						<div className="auth-field">
-							<label className="auth-label">昵称 <span className="auth-optional">选填</span></label>
+					<div className="auth-field">
+						<label className="auth-label">昵称 <span className="auth-optional">选填</span></label>
+						<div className="auth-input-wrap">
 							<input
 								type="text"
 								value={nickname}
@@ -197,7 +198,8 @@ export default function AuthModal({ open, onClose, initialMode = "login" }: Auth
 								disabled={loading}
 							/>
 						</div>
-					)}
+					</div>
+				)}
 
 					<div className="auth-field">
 						<label className="auth-label">密码</label>
