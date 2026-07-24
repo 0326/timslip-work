@@ -40,8 +40,9 @@ function Portrait({ figure, asset }: { figure: FigureDetail; asset?: FigureAsset
   const fullUrl = asset ? sizedAssetUrl(pickAssetFile(asset, "portrait-full"), 896) : null;
   const bustUrl = asset ? sizedAssetUrl(pickAssetFile(asset, "portrait-bust"), 768) : null;
   const avatarUrl = asset ? sizedAssetUrl(pickAssetFile(asset, "avatar"), 320) : null;
+  const highRarity = figure.star >= 4;
 
-  if (asset && (fullUrl || bustUrl)) {
+  if (highRarity && asset && (fullUrl || bustUrl)) {
     return (
       <div className="fg-fullscene" style={{ perspective: 1600 }}>
         <motion.div
@@ -265,23 +266,72 @@ export default function FigureDetailPage() {
     return () => window.removeEventListener("keydown", onKey);
   }, [goPrev, goNext, questOpen]);
 
-  if (loading) return <Loading />;
-  if (error) return <div className="figure-detail-error">{error}</div>;
-  if (!figure) return null;
+  // 从 URL 或数据库提取人物基本信息（用于 API 失败时降级展示）
+  const fallbackInfo = useMemo(() => {
+    if (!id) return null;
+    return { id };
+  }, [id]);
+
+  if (loading && !figure) return <Loading />;
+
+  // API 失败时的降级：如有本地资产则构造最小 figure 对象继续渲染
+  const hasLocalAssets = localBundle && (
+    localBundle.assets.classical?.files?.some((f) => f.url) ?? false
+  );
+  if (error && !figure) {
+    if (hasLocalAssets) {
+      // 构造最小 figure 供页面骨架渲染（showF degrade 标记）
+      Object.assign(fallbackInfo!, { _degraded: true });
+    } else {
+      return (
+        <div className="figure-detail-error" style={{ padding: "2rem", textAlign: "center" }}>
+          <p style={{ marginBottom: "0.5rem", opacity: 0.6 }}>加载失败</p>
+          <p style={{ fontSize: "0.85rem", opacity: 0.4 }}>{error}</p>
+          <Link to="/figures" style={{ marginTop: "1rem", display: "inline-block", opacity: 0.6 }}>
+            ‹ 返回群英谱
+          </Link>
+        </div>
+      );
+    }
+  }
+  // 最终可用的 figure：API 返回 or 降级兜底
+  const displayFigure = figure ?? (hasLocalAssets ? {
+    id: id!,
+    name: id!,
+    aliases: [],
+    birth_year: null,
+    death_year: null,
+    dynasty: "",
+    identity: "",
+    bio_summary: "",
+    keyword_tags: [],
+    avatar_icon: "",
+    avatar_url: null,
+    avatar: null,
+    gender: "unknown" as const,
+    star: 0,
+    src_book: "",
+    src_juan: null,
+    src_chapter: null,
+    passages: [],
+  } as FigureDetail : null);
+  if (!displayFigure) return null;
 
   const lifePct =
-    figure.death_year != null && figure.birth_year != null
-      ? Math.min(100, Math.round(((figure.death_year - figure.birth_year) / LIFE_MAX) * 100))
+    displayFigure.death_year != null && displayFigure.birth_year != null
+      ? Math.min(100, Math.round(((displayFigure.death_year - displayFigure.birth_year) / LIFE_MAX) * 100))
       : null;
-  const lived = lifePct != null ? (figure.death_year as number) - (figure.birth_year as number) : null;
-  const titlePlates = figure.aliases?.filter((a) => a.length > 1).slice(0, 4) || [];
-  const hasQuests = figure.passages.length > 0;
-  const hasFullScene = !!(defaultAsset && (pickAssetFile(defaultAsset, "portrait-full") || pickAssetFile(defaultAsset, "portrait-bust")));
+  const lived = lifePct != null ? (displayFigure.death_year as number) - (displayFigure.birth_year as number) : null;
+  const titlePlates = displayFigure.aliases?.filter((a) => a.length > 1).slice(0, 4) || [];
+  const hasQuests = figure ? figure.passages.length > 0 : false;
+  const highRarity = displayFigure.star >= 4;
+  const hasFullScene = highRarity && !!(defaultAsset && (pickAssetFile(defaultAsset, "portrait-full") || pickAssetFile(defaultAsset, "portrait-bust")));
+  const isDegraded = !!error && !figure; // 降级模式标记
 
   return (
-    <div className="fg fg--stage" data-identity={figure.identity}>
+    <div className="fg fg--stage" data-identity={displayFigure.identity}>
       {(() => {
-        const sceneBg = defaultAsset ? pickAssetFile(defaultAsset, "background") : null;
+        const sceneBg = highRarity && defaultAsset ? pickAssetFile(defaultAsset, "background") : null;
         return (
           <div
             className={`fg-stage${sceneBg ? " has-fullscene" : ""}`}
@@ -292,6 +342,15 @@ export default function FigureDetailPage() {
             <Link to="/figures" className="fg-back">
               <span className="fg-back-arrow" aria-hidden="true">‹</span> 返回群英谱
             </Link>
+            {isDegraded && (
+              <div style={{
+                textAlign: "center", padding: "0.4rem 1rem", margin: "0.5rem auto 0",
+                maxWidth: "360px", fontSize: "0.8rem", opacity: 0.55,
+                background: "rgba(0,0,0,0.3)", borderRadius: "6px",
+              }}>
+                人物详情暂不可用，仅展示视觉素材
+              </div>
+            )}
 
             <motion.div
               className="fg-stage-art"
@@ -299,19 +358,19 @@ export default function FigureDetailPage() {
               animate={{ opacity: 1 }}
               transition={{ duration: 0.4, ease: "easeOut" }}
             >
-              <Portrait figure={figure} asset={defaultAsset} />
+              <Portrait figure={displayFigure} asset={defaultAsset} />
               {/* 全屏立绘模式：姓名+星级放在立绘左下 */}
               {hasFullScene && (
                 <div className="fg-stage-caption on-fullscene">
-                  <div className="fg-stage-eyebrow">青史人物 · {figure.identity}</div>
-                  <h1 className="fg-stage-name">{figure.name}</h1>
-                  {figure.star >= 1 && (
-                    <div className="fg-stage-star" data-star={figure.star}>
+                  <div className="fg-stage-eyebrow">青史人物 · {displayFigure.identity}</div>
+                  <h1 className="fg-stage-name">{displayFigure.name}</h1>
+                  {displayFigure.star >= 1 && (
+                    <div className="fg-stage-star" data-star={displayFigure.star}>
                       <span className="fg-star-marks" aria-hidden="true">
-                        {"★".repeat(figure.star)}
-                        <span className="fg-star-empty">{"★".repeat(5 - figure.star)}</span>
+                        {"★".repeat(displayFigure.star)}
+                        <span className="fg-star-empty">{"★".repeat(5 - displayFigure.star)}</span>
                       </span>
-                      <span className="fg-star-label">{STAR_LABEL[figure.star]}</span>
+                      <span className="fg-star-label">{STAR_LABEL[displayFigure.star]}</span>
                     </div>
                   )}
                 </div>
@@ -324,15 +383,15 @@ export default function FigureDetailPage() {
               animate={{ opacity: 1 }}
               transition={{ duration: 0.4, delay: 0.1, ease: "easeOut" }}
             >
-          {!hasFullScene && <div className="fg-eyebrow">青史人物 · {figure.identity}</div>}
-          {!hasFullScene && <h1 className="fg-name">{figure.name}</h1>}
-          {!hasFullScene && figure.star >= 1 && (
-            <div className="fg-star" data-star={figure.star} title={`综合等级 ${figure.star} 星`}>
+          {!hasFullScene && <div className="fg-eyebrow">青史人物 · {displayFigure.identity}</div>}
+          {!hasFullScene && <h1 className="fg-name">{displayFigure.name}</h1>}
+          {!hasFullScene && displayFigure.star >= 1 && (
+            <div className="fg-star" data-star={displayFigure.star} title={`综合等级 ${displayFigure.star} 星`}>
               <span className="fg-star-marks" aria-hidden="true">
-                {"★".repeat(figure.star)}
-                <span className="fg-star-empty">{"★".repeat(5 - figure.star)}</span>
+                {"★".repeat(displayFigure.star)}
+                <span className="fg-star-empty">{"★".repeat(5 - displayFigure.star)}</span>
               </span>
-              <span className="fg-star-label">{STAR_LABEL[figure.star]}</span>
+              <span className="fg-star-label">{STAR_LABEL[displayFigure.star]}</span>
             </div>
           )}
 
@@ -343,15 +402,15 @@ export default function FigureDetailPage() {
           )}
 
           <div className="fg-badges">
-            <span className="fg-badge is-identity">{figure.identity}</span>
-            <span className="fg-badge is-dynasty">{figure.dynasty}</span>
+            <span className="fg-badge is-identity">{displayFigure.identity}</span>
+            <span className="fg-badge is-dynasty">{displayFigure.dynasty}</span>
           </div>
 
-          {figure.bio_summary && <p className="fg-bio-dark">{figure.bio_summary}</p>}
+          {displayFigure.bio_summary && <p className="fg-bio-dark">{displayFigure.bio_summary}</p>}
 
-          {figure.keyword_tags?.length > 0 && (
+          {displayFigure.keyword_tags?.length > 0 && (
             <div className="fg-tags-dark">
-              {figure.keyword_tags.slice(0, 6).map((t) => (
+              {displayFigure.keyword_tags.slice(0, 6).map((t) => (
                 <span key={t} className="fg-tag-dark">{t}</span>
               ))}
             </div>
@@ -360,7 +419,7 @@ export default function FigureDetailPage() {
           {lifePct != null && (
             <div className="fg-life">
               <div className="fg-life-label">
-                <span>命途 · {yearShort(figure.birth_year)} — {yearShort(figure.death_year)}</span>
+                <span>命途 · {yearShort(displayFigure.birth_year)} — {yearShort(displayFigure.death_year)}</span>
                 <span>享年 {lived}</span>
               </div>
               <div className="fg-life-track">
@@ -381,10 +440,10 @@ export default function FigureDetailPage() {
             >
               <span className="fg-act-icon" aria-hidden="true">史</span>
               生平历程
-              {hasQuests && <span className="fg-act-count">{figure.passages.length}</span>}
+              {hasQuests && <span className="fg-act-count">{displayFigure.passages.length}</span>}
             </button>
             {relations.length > 0 && (
-              <Link className="fg-act is-ghost" to={`/figures?view=graph&focus=${figure.id}`}>
+              <Link className="fg-act is-ghost" to={`/figures?view=graph&focus=${displayFigure.id}`}>
                 <span className="fg-act-icon" aria-hidden="true">联</span>
                 人物关系
                 <span className="fg-act-count">{relations.length}</span>
@@ -416,7 +475,7 @@ export default function FigureDetailPage() {
         );
       })()}
 
-      <QuestDrawer open={questOpen} onClose={() => setQuestOpen(false)} figure={figure} />
+      <QuestDrawer open={questOpen} onClose={() => setQuestOpen(false)} figure={displayFigure} />
     </div>
   );
 }

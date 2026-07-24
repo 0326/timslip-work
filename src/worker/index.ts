@@ -35,6 +35,18 @@ import type {
 
 const app = new Hono<{ Bindings: Env }>();
 
+// 全局错误兜底：未捕获的异常统一返回 JSON 500 而非裸 text
+app.onError((err, c) => {
+  const status = (err as any)?.status ?? 500;
+  const message = status === 500
+    ? "Internal Server Error"
+    : (err instanceof Error ? err.message : String(err));
+  // 500 时打印完整堆栈到 console（Workers real-time logs 可查）
+  if (status === 500) console.error("[unhandled]", err);
+  c.header("Content-Type", "application/json");
+  return c.json({ error: { code: "INTERNAL_ERROR", message } }, status as 500);
+});
+
 // CORS：仅允许主站及子游戏域名跨域调用
 const ALLOWED_ORIGINS = [
   "https://timeslip.work",
