@@ -19,7 +19,9 @@ export default function AboutPage() {
           <h2 className="about-section-title">关于项目</h2>
           <div className="about-section-body">
             <p>
-              timeslip.work
+              <a className="about-link" href="https://timeslip.work" rel="noopener noreferrer" target="_blank">
+                timeslip.work
+              </a>
               「穿越·兰台」是一个以数字化方式呈现中国古代历史的公益项目。
               <br />
               timeslip
@@ -53,7 +55,16 @@ export default function AboutPage() {
             </p>
           </div>
         </section>
-
+        <section className="about-section">
+          <h2 className="about-section-title">引经据典</h2>
+          <div className="about-section-body">
+            <p>本项目文献主要来源于：<br/>
+            1. <a className="about-link" href="https://ctext.org/zh" rel="noopener noreferrer" target="_blank">中国哲学书电子计划</a>: 提供了中国古代大量文献的电子版本，超赞的线上开放图书馆。<br />
+            2. <a className="about-link" href="https://www.shidianguji.com/" rel="noopener noreferrer" target="_blank">识典古籍</a>: 字节跟北大共建的古籍文献平台，提供了很多现代化功能，如果要学术专业推荐这个！
+            </p>
+            <p>如果说这两个平台的优势是专业，那么穿越兰台的优势就是趣味, 尽量避免学术/专业化的表达，而是通过更好玩，更容易传播的方式，让更多的人能够接触和理解历史。</p>
+          </div>
+        </section>
         {/* 感谢 */}
         <section className="about-section">
           <h2 className="about-section-title">感谢</h2>
