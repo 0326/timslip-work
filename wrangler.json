@@ -21,7 +21,8 @@
 			"binding": "USER_DB",
 			"database_name": "timeslip-shiji-users",
 			"database_id": "5b627cc1-5f18-4eaf-aba8-f7ebe214404f",
-			"migrations_dir": "src/worker/migrations"
+			"migrations_dir": "src/worker/migrations",
+			"remote": true
 		}
 	],
 	"kv_namespaces": [
