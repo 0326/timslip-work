@@ -1,4 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
+import UserMenu from "../Auth/UserMenu";
 
 const NAV_LINKS = [
   { to: "/", label: "穿越" },
@@ -25,19 +26,22 @@ export function Header() {
         穿越·兰台
         <span className="en">TIMESLIP.WORK</span>
       </Link>
-      <ul className="site-header-links">
-        {NAV_LINKS.map((link) => (
-          <li key={link.to}>
-            <Link
-              to={link.to}
-              className={location.pathname === link.to ? "active" : ""}
-              onMouseEnter={() => ROUTE_CHUNKS[link.to]?.()}
-            >
-              {link.label}
-            </Link>
-          </li>
-        ))}
-      </ul>
+      <div className="site-header-right">
+        <ul className="site-header-links">
+          {NAV_LINKS.map((link) => (
+            <li key={link.to}>
+              <Link
+                to={link.to}
+                className={location.pathname === link.to ? "active" : ""}
+                onMouseEnter={() => ROUTE_CHUNKS[link.to]?.()}
+              >
+                {link.label}
+              </Link>
+            </li>
+          ))}
+        </ul>
+        <UserMenu />
+      </div>
     </nav>
   );
 }

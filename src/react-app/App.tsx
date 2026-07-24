@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Loading } from "./components/Common/Loading";
 import { ErrorBoundary } from "./components/Common/ErrorBoundary";
 import { Header } from "./components/Common/Header";
+import { AuthProvider } from "./store/authStore";
 import Home from "./pages/Home";
 
 const SearchPage = lazy(() => import("./pages/SearchPage"));
@@ -93,12 +94,14 @@ export default function App() {
   return (
     <ErrorBoundary>
       <BrowserRouter>
-        <Header />
-        <div className="site-body">
-          <Suspense fallback={<Loading />}>
-            <AnimatedRoutes />
-          </Suspense>
-        </div>
+        <AuthProvider>
+          <Header />
+          <div className="site-body">
+            <Suspense fallback={<Loading />}>
+              <AnimatedRoutes />
+            </Suspense>
+          </div>
+        </AuthProvider>
       </BrowserRouter>
     </ErrorBoundary>
   );

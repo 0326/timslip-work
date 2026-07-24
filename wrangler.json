@@ -16,6 +16,14 @@
 	"vars": {
 		"TURSO_DATABASE_URL": "libsql://timslip-db-johnfire.aws-ap-northeast-1.turso.io"
 	},
+	"d1_databases": [
+		{
+			"binding": "USER_DB",
+			"database_name": "timeslip-shiji-users",
+			"database_id": "5b627cc1-5f18-4eaf-aba8-f7ebe214404f",
+			"migrations_dir": "src/worker/migrations"
+		}
+	],
 	"kv_namespaces": [
 		{
 			"binding": "KV",

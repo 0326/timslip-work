@@ -2,6 +2,8 @@ import { Hono } from "hono";
 import type { Context } from "hono";
 import { cors } from "hono/cors";
 import { getDb } from "./db";
+import { auth as authRoutes } from "./routes/auth";
+import { user as userRoutes } from "./routes/user";
 import type {
   Passage,
   Book,
@@ -37,7 +39,8 @@ const app = new Hono<{ Bindings: Env }>();
 const ALLOWED_ORIGINS = [
   "https://timeslip.work",
   "https://www.timeslip.work",
-  "http://localhost:5173", // 本地开发
+  "https://shiji.timeslip.work",
+  "http://localhost:5173",
 ];
 
 function isAllowedOrigin(origin: string): boolean {
@@ -52,6 +55,7 @@ function isAllowedOrigin(origin: string): boolean {
 
 app.use("/api/*", cors({
   origin: (origin) => (origin && isAllowedOrigin(origin) ? origin : null),
+  credentials: true,
 }));
 
 // 全局限流：100 req/min per IP（仅当 RATE_LIMITER 绑定存在时启用；
@@ -1678,5 +1682,8 @@ app.get("/api/atlas/snapshots/:slug", async (c) => {
   kvPutSafe(c, cacheKey, JSON.stringify(data));
   return c.json(data);
 });
+
+app.route("/api/auth", authRoutes);
+app.route("/api/user", userRoutes);
 
 export default app;

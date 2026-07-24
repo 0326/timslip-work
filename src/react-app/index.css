@@ -1,6 +1,7 @@
 @import "./styles/variables.css";
 @import "./styles/fonts.css";
 @import "./components/Common/common.css";
+@import "./components/Auth/auth.css";
 
 *,
 *::before,

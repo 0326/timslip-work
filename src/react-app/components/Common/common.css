@@ -15,6 +15,12 @@
   border-bottom: 1px solid var(--rule);
 }
 
+.site-header-right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-lg);
+}
+
 .site-header-brand {
   display: flex;
   align-items: center;
