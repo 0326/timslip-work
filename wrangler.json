@@ -36,7 +36,8 @@
 		{
 			"binding": "AVATAR_BUCKET",
 			"bucket_name": "timslip-avatars",
-			"preview_bucket_name": "timslip-avatars-preview"
+			"preview_bucket_name": "timslip-avatars",
+			"remote": true
 		},
 		{
 			"binding": "ASSETS_BUCKET",
