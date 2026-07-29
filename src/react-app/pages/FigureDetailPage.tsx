@@ -14,6 +14,7 @@ import {
 } from "../data/figure-assets";
 import { FigureSymbol } from "../components/Figure/FigureSymbol";
 import { Loading } from "../components/Common/Loading";
+import { useAudio, useBgm } from "../store/audioStore";
 import "../components/Figure/figure.css";
 import "../components/Figure/figure-game.css";
 
@@ -189,6 +190,8 @@ function QuestDrawer({
 export default function FigureDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  useBgm("/assets/audio/characters.mp3", 0.3);
+  const { playHoverBlip } = useAudio();
   const { data: figure, loading, error: apiError } = useApi<FigureDetail>(
     () => getFigure(id!),
     [id],
@@ -435,6 +438,7 @@ export default function FigureDetailPage() {
             <button
               className="fg-act is-primary"
               onClick={() => setQuestOpen(true)}
+              onMouseEnter={playHoverBlip}
               disabled={!hasQuests}
               title={hasQuests ? undefined : "此人物由机器抽取，史料待补录"}
             >
@@ -465,6 +469,7 @@ export default function FigureDetailPage() {
             <button
               className="fg-nav-btn fg-nav-next"
               onClick={goNext}
+              onMouseEnter={playHoverBlip}
               disabled={!nextFigure}
               aria-label={nextFigure ? `下一位：${nextFigure.name}` : "已是最后一位"}
               title={nextFigure ? nextFigure.name : "已是最后一位"}

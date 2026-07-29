@@ -8,6 +8,7 @@ import { RiverCanvas } from "./RiverCanvas";
 import { DynastyNode } from "./DynastyNode";
 import { Header } from "../Common/Header";
 import { FloatingBubble } from "../Circle/FloatingBubble";
+import { useAudioEngine } from "../../hooks/useAudioEngine";
 import "./timeline.css";
 
 const SLOT_WIDTH = 150;
@@ -74,6 +75,11 @@ interface TimelineProps {
 export function Timeline({ data }: TimelineProps) {
   const navigate = useNavigate();
   const dynasties = data.dynasties;
+  const {
+    setVortexActive,
+    playClick,
+    playDynastyBlip,
+  } = useAudioEngine();
 
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -122,6 +128,7 @@ export function Timeline({ data }: TimelineProps) {
       const prev = dynasties[currentIndexRef.current];
       currentIndexRef.current = index;
       setActiveIndex(index);
+      playDynastyBlip();
 
       if (transitioningRef.current) {
         setSelectedIndex(index);
@@ -166,7 +173,7 @@ export function Timeline({ data }: TimelineProps) {
         setPreviousTextDynasty(null);
       }, 400);
     },
-    [dynasties],
+    [dynasties, playDynastyBlip],
   );
 
   // Timeline scroll engine: JS transform + lerp for smooth inertial motion.
@@ -258,6 +265,7 @@ export function Timeline({ data }: TimelineProps) {
       } else if (e.key === "Enter") {
         const d = dynasties[currentIndexRef.current];
         if (d?.is_active && d.book_ids?.includes("shiji")) {
+          playClick();
           window.location.href = "https://shiji.timeslip.work";
         }
       }
@@ -280,12 +288,13 @@ export function Timeline({ data }: TimelineProps) {
       window.removeEventListener("keydown", onKey);
       window.removeEventListener("resize", onResize);
     };
-  }, [applySelection, dynasties, navigate]);
+  }, [applySelection, dynasties, navigate, playClick]);
 
   const handleCtaClick = () => {
     if (singularity) return;
     if (selectedDynasty.is_active && selectedDynasty.book_ids?.includes("shiji")) {
       // 进入奇点态：ImplosionCanvas 负责截图整页 → 像素吸入 → onDone 跳转
+      playClick();
       setWarp(true);
       setSingularity(true);
     }
@@ -359,10 +368,10 @@ export function Timeline({ data }: TimelineProps) {
         <button
           id="portal-center-cta"
           onClick={handleCtaClick}
-          onMouseEnter={() => ctaActive && setWarp(true)}
-          onMouseLeave={() => !singularity && setWarp(false)}
-          onFocus={() => ctaActive && setWarp(true)}
-          onBlur={() => !singularity && setWarp(false)}
+          onMouseEnter={() => { if (ctaActive) { setWarp(true); setVortexActive(true); } }}
+          onMouseLeave={() => { if (!singularity) { setWarp(false); setVortexActive(false); } }}
+          onFocus={() => { if (ctaActive) { setWarp(true); setVortexActive(true); } }}
+          onBlur={() => { if (!singularity) { setWarp(false); setVortexActive(false); } }}
           className={`portal-center-cta${ctaActive ? "" : " locked"}${warp && ctaActive ? " portal-cta-warp" : ""}`}
         >
           <span>

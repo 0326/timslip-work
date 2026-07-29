@@ -5,6 +5,7 @@ import { useSearch } from "../hooks/useSearch";
 import { useApi } from "../hooks/useApi";
 import { getBooks } from "../data/api";
 import { getBookIntro } from "../data/bookIntros";
+import { useAudio, useBgm } from "../store/audioStore";
 import type { Book } from "../data/types";
 import { Header } from "../components/Common/Header";
 import { Footer } from "../components/Common/Footer";
@@ -21,6 +22,10 @@ export default function SearchPage() {
   const query = searchParams.get("q") || "";
   const book = searchParams.get("book") || "";
   const page = parseInt(searchParams.get("page") || "1");
+
+  // 书架 hover 提示音
+  const { playHoverBlip } = useAudio();
+  useBgm("/assets/audio/classics.mp3", 0.12);
 
   // 获取所有史书列表
   const { data: booksData } = useApi(getBooks, [], "/api/books");
@@ -95,6 +100,7 @@ export default function SearchPage() {
                   className={`lt-book${hasText ? "" : " lt-book--empty"}`}
                   onClick={() => hasText && handleBookClick(b.id)}
                   disabled={!hasText}
+                  onMouseEnter={playHoverBlip}
                   variants={{
                     hidden: { opacity: 0, y: 12 },
                     show: { opacity: 1, y: 0 },

@@ -8,6 +8,7 @@ import { pickAssetFile, sizedAssetUrl } from "../data/figure-assets";
 import type { FigureListResponse } from "../data/types";
 import { FigureCard } from "../components/Figure/FigureCard";
 import { Loading } from "../components/Common/Loading";
+import { useAudio, useBgm } from "../store/audioStore";
 import "../components/Figure/figure.css";
 import "../components/Figure/figure-graph.css";
 
@@ -143,6 +144,8 @@ const buildStarNode = (color: string, coreSize: number): THREE.Group => {
 const PAGE_SIZE = 24;
 
 export default function FigurePage() {
+  useBgm("/assets/audio/characters.mp3", 0.3);
+  const { playHoverBlip } = useAudio();
   const [searchParams, setSearchParams] = useSearchParams();
   const [mode, setMode] = useState<ViewMode>("list");
   const [listItems, setListItems] = useState<FigureListResponse["items"]>([]);
@@ -158,7 +161,7 @@ export default function FigurePage() {
   const [committedQuery, setCommittedQuery] = useState(() => searchParams.get("q") || "");
   const [dynastyOpen, setDynastyOpen] = useState(false);
   const [identityOpen, setIdentityOpen] = useState(false);
-  const [sort, setSort] = useState<"era" | "star">("era"); // era=历史时序 | star=星级
+  const [sort, setSort] = useState<"era" | "star">("star"); // star=星级（默认，降序） | era=历史时序
 
   const dynasty = searchParams.get("dynasty") || "";
   const identity = searchParams.get("identity") || "";
@@ -319,11 +322,12 @@ export default function FigurePage() {
     G.d3ReheatSimulation();
     setSel(node);
     setSelPortrait(null);
+    playHoverBlip();
     setTimeout(
       () => G.cameraPosition({ x: 0, y: 0, z: 220 }, { x: 0, y: 0, z: 0 }, 900),
       250,
     );
-  }, []);
+  }, [playHoverBlip]);
 
   const resetView = useCallback(() => {
     const G = graphRef.current;
@@ -748,6 +752,7 @@ export default function FigurePage() {
                           setDynastyOpen(!dynastyOpen);
                           setIdentityOpen(false);
                         }}
+                        onMouseEnter={playHoverBlip}
                       >
                         <span className="figure-filter-label">{currentDynastyLabel}</span>
                         <i className="ti ti-chevron-down" />
@@ -786,6 +791,7 @@ export default function FigurePage() {
                           setIdentityOpen(!identityOpen);
                           setDynastyOpen(false);
                         }}
+                        onMouseEnter={playHoverBlip}
                       >
                         <span className="figure-filter-label">{currentIdentityLabel}</span>
                         <i className="ti ti-chevron-down" />
@@ -851,20 +857,22 @@ export default function FigurePage() {
                 {isList && (
                   <div className="figure-mode-switch figure-sort-switch">
                     <button
+                      className={`figure-mode-btn ${sort === "star" ? "active" : ""}`}
+                      onClick={() => setSort("star")}
+                      onMouseEnter={playHoverBlip}
+                      title="按人物星级排列（降序）"
+                    >
+                      <i className="ti ti-star-filled" />
+                      星级
+                    </button>
+                    <button
                       className={`figure-mode-btn ${sort === "era" ? "active" : ""}`}
                       onClick={() => setSort("era")}
+                      onMouseEnter={playHoverBlip}
                       title="按历史时序排列"
                     >
                       <i className="ti ti-history" />
                       时序
-                    </button>
-                    <button
-                      className={`figure-mode-btn ${sort === "star" ? "active" : ""}`}
-                      onClick={() => setSort("star")}
-                      title="按人物星级排列"
-                    >
-                      <i className="ti ti-star-filled" />
-                      星级
                     </button>
                   </div>
                 )}
@@ -872,6 +880,7 @@ export default function FigurePage() {
                   <button
                     className={`figure-mode-btn ${isList ? "active" : ""}`}
                     onClick={() => setMode("list")}
+                    onMouseEnter={playHoverBlip}
                   >
                     <i className="ti ti-layout-grid" />
                     列表
@@ -879,6 +888,7 @@ export default function FigurePage() {
                   <button
                     className={`figure-mode-btn ${isGraph ? "active" : ""}`}
                     onClick={() => setMode("graph")}
+                    onMouseEnter={playHoverBlip}
                   >
                     <i className="ti ti-star" />
                     星图
@@ -946,6 +956,7 @@ export default function FigurePage() {
                           key={n.id}
                           className="fgx-search-item"
                           onClick={() => handleSearchSelect(n)}
+                          onMouseEnter={playHoverBlip}
                         >
                           <span className="fgx-search-name">{n.name}</span>
                           <span className="fgx-search-meta">
@@ -962,6 +973,7 @@ export default function FigurePage() {
                   <button
                     className={`figure-mode-btn ${isList ? "active" : ""}`}
                     onClick={() => setMode("list")}
+                    onMouseEnter={playHoverBlip}
                   >
                     <i className="ti ti-layout-grid" />
                     列表
@@ -969,13 +981,14 @@ export default function FigurePage() {
                   <button
                     className={`figure-mode-btn ${isGraph ? "active" : ""}`}
                     onClick={() => setMode("graph")}
+                    onMouseEnter={playHoverBlip}
                   >
                     <i className="ti ti-star" />
                     星图
                   </button>
                 </div>
                 {sel && (
-                  <button className="fgx-reset" onClick={resetView}>
+                  <button className="fgx-reset" onClick={resetView} onMouseEnter={playHoverBlip}>
                     <i className="ti ti-refresh" /> 重置
                   </button>
                 )}

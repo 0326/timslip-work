@@ -1,5 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 import UserMenu from "../Auth/UserMenu";
+import { useAudio } from "../../store/audioStore";
+import { MuteToggle } from "./MuteToggle";
 
 const NAV_LINKS = [
   { to: "/", label: "穿越" },
@@ -21,6 +23,7 @@ const ROUTE_CHUNKS: Record<string, () => Promise<unknown>> = {
 
 export function Header() {
   const location = useLocation();
+  const { muted, setMuted } = useAudio();
   return (
     <nav className="site-header">
       <Link to="/" className="site-header-brand">
@@ -42,6 +45,7 @@ export function Header() {
             </li>
           ))}
         </ul>
+        <MuteToggle muted={muted} onToggle={() => setMuted(!muted)} />
         <UserMenu />
       </div>
     </nav>

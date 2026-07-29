@@ -480,7 +480,7 @@ app.get("/api/chapters/:id{.+}", async (c) => {
   }
 
   const passages = await getDb(c.env).prepare(
-    "SELECT id, content, vernacular, annotation, order_idx, version FROM passages WHERE chapter_id = ? ORDER BY order_idx",
+    "SELECT id, content, vernacular, annotation, glosses, order_idx, version FROM passages WHERE chapter_id = ? ORDER BY order_idx",
   )
     .bind(id)
     .all();
@@ -501,9 +501,20 @@ app.get("/api/chapters/:id{.+}", async (c) => {
   const prev = idx > 0 ? list[idx - 1] : null;
   const next = idx >= 0 && idx < list.length - 1 ? list[idx + 1] : null;
 
+  // 反序列化 glosses JSON → Gloss[]
+  const passageList = (passages.results as Record<string, unknown>[]).map((row) => ({
+    id: row.id as string,
+    content: row.content as string,
+    vernacular: (row.vernacular as string) || null,
+    annotation: (row.annotation as string) || null,
+    glosses: row.glosses ? (JSON.parse(row.glosses as string) as Gloss[]) : null,
+    order_idx: row.order_idx as number,
+    version: row.version as number,
+  }));
+
   return c.json({
     ...(chapter as unknown as ChapterDetail),
-    passages: passages.results as unknown as ChapterDetail["passages"],
+    passages: passageList,
     prev,
     next,
   } satisfies ChapterDetail);

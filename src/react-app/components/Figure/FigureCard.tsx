@@ -8,6 +8,7 @@ import {
   getLocalFigureAssets,
 } from "../../data/figure-assets";
 import { FigureSymbol } from "./FigureSymbol";
+import { useAudio } from "../../store/audioStore";
 import "./figure-game.css";
 
 const item: Variants = {
@@ -23,6 +24,7 @@ export interface FigureCardProps {
 
 export function FigureCard({ figure, assetAvatarUrl }: FigureCardProps) {
   const navigate = useNavigate();
+  const { playHoverBlip } = useAudio();
   const go = () => navigate(`/figures/${figure.id}`);
 
   // 本地静态兜底头像（仅内置若干人物，纯同步、无网络）；R2 资产由列表接口的 figure.avatar 直接给出，
@@ -46,6 +48,7 @@ export function FigureCard({ figure, assetAvatarUrl }: FigureCardProps) {
       data-has-asset={avatarSrc ? "true" : "false"}
       variants={item}
       onClick={go}
+      onMouseEnter={playHoverBlip}
       role="button"
       tabIndex={0}
       onKeyDown={(e) => e.key === "Enter" && go()}

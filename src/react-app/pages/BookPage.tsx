@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { getBookCatalog } from "../data/api";
 import { getBookIntro } from "../data/bookIntros";
 import { useApi } from "../hooks/useApi";
+import { useAudio, useBgm } from "../store/audioStore";
 import type { BookCatalog, CatalogChapter } from "../data/types";
 import { Header } from "../components/Common/Header";
 import { Loading } from "../components/Common/Loading";
@@ -40,6 +41,10 @@ export default function BookPage() {
     [id],
     `/api/books/${id}/catalog`,
   );
+
+  // 典籍页 hover 提示音（BGM + 静音由全局 AudioProvider 管理）
+  const { playHoverBlip } = useAudio();
+  useBgm("/assets/audio/classics.mp3", 0.12);
 
   const groups = useMemo(
     () => (data ? groupByCategory(data.chapters) : []),
@@ -124,6 +129,7 @@ export default function BookPage() {
                 key={g.key}
                 className={`lt-catnav-item${activeCat === g.key ? " active" : ""}`}
                 onClick={() => jumpTo(g.key)}
+                onMouseEnter={playHoverBlip}
               >
                 <span className="lt-catnav-name">{g.category}</span>
                 <span className="lt-catnav-count">{g.chapters.length}</span>
@@ -157,6 +163,7 @@ export default function BookPage() {
                       role={readable ? "button" : undefined}
                       tabIndex={readable ? 0 : undefined}
                       onClick={() => openChapter(ch)}
+                      onMouseEnter={playHoverBlip}
                       onKeyDown={(e) => {
                         if (e.key === "Enter") openChapter(ch);
                       }}
