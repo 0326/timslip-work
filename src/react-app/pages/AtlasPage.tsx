@@ -11,6 +11,7 @@ import type {
   AtlasSnapshotDetail,
   RegimeProps,
 } from "../components/Atlas/types";
+import { useBgm } from "../store/audioStore";
 import "../components/Atlas/atlas.css";
 
 const PLAY_INTERVAL = 3200;
@@ -40,6 +41,7 @@ function loadSnapshotData(slug: string): Promise<FeatureCollection> {
 }
 
 export default function AtlasPage() {
+  useBgm("/assets/audio/map.mp3", 0.12);
   const [data, setData] = useState<AtlasData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [index, setIndex] = useState(0);

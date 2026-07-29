@@ -55,5 +55,15 @@
 		"lint": "eslint .",
 		"preview": "npm run build && vite preview"
 	},
-	"type": "module"
+	"type": "module",
+	"allowScripts": {
+		"esbuild@0.25.4": true,
+		"esbuild@0.27.7": true,
+		"esbuild@0.28.1": true,
+		"esbuild@0.27.3": true,
+		"sharp@0.33.5": true,
+		"sharp@0.34.5": true,
+		"workerd@1.20251125.0": true,
+		"workerd@1.20260504.1": true
+	}
 }

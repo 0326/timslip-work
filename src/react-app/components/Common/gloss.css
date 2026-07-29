@@ -1,0 +1,103 @@
+/* ── 词条标注：生僻字词 / 特殊名词 ──
+ * 虚线下划线标记 + 悬浮 tooltip（注音 + 释义）
+ * 在 PassageView（单段原文）与 ReaderPage（篇章阅读）中复用。
+ */
+
+/* 标注词：朱砂虚线 */
+.gloss-term {
+  position: relative;
+  cursor: help;
+  color: var(--accent);
+  border-bottom: 1px dashed var(--accent);
+  border-radius: var(--radius-sm);
+  padding: 0 1px;
+  outline: none;
+  text-decoration: none;
+  transition: color var(--duration-fast) var(--ease-ink);
+}
+
+.gloss-term:hover,
+.gloss-term:focus-visible {
+  color: #a02e20;
+}
+
+/* 悬浮 tooltip：宽大于高，横排显示 */
+.gloss-tooltip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 200;
+  min-width: 240px;
+  max-width: 420px;
+  padding: var(--space-sm) var(--space-md);
+  background: var(--bg-dark);
+  border: 1px solid var(--rule);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-md);
+  box-shadow: 0 4px 16px rgba(26, 26, 26, 0.12);
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  line-height: 1.7;
+  color: var(--ink-light);
+  white-space: normal;
+  word-break: break-word;
+  animation: glossTooltipIn 0.18s var(--ease-ink);
+}
+
+/* 空间不够时显示在下方 */
+.gloss-tooltip.below {
+  bottom: auto;
+  top: calc(100% + 8px);
+}
+
+/* 指示小三角 */
+.gloss-tooltip::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: var(--rule);
+}
+
+.gloss-tooltip.below::after {
+  top: auto;
+  bottom: 100%;
+  border-top-color: transparent;
+  border-bottom-color: var(--rule);
+}
+
+/* 注音（拼音）：行内显示，让 tooltip 横向展开 */
+.gloss-tooltip-pinyin {
+  display: inline;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--accent);
+  letter-spacing: 0.05em;
+  margin-right: 6px;
+}
+
+/* 释义：行内紧跟拼音 */
+.gloss-tooltip-text {
+  display: inline;
+}
+
+@keyframes glossTooltipIn {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+/* 窄屏适配 */
+@media (max-width: 600px) {
+  .gloss-tooltip {
+    max-width: 220px;
+  }
+}

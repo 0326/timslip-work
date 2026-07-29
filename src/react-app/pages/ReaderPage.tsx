@@ -3,12 +3,16 @@ import { useParams, useNavigate, useSearchParams, Link } from "react-router-dom"
 import { motion } from "framer-motion";
 import { getChapter, getBookCatalog } from "../data/api";
 import { useApi } from "../hooks/useApi";
-import type { ChapterDetail, BookCatalog } from "../data/types";
+import type { ChapterDetail, BookCatalog, Gloss } from "../data/types";
 import { Header } from "../components/Common/Header";
 import { Loading } from "../components/Common/Loading";
+import { GlossText } from "../components/Common/GlossText";
+import { parseTermPinyin } from "../data/glossPinyin";
+import { useBgm } from "../store/audioStore";
 import "../components/Search/lantai.css";
 
 export default function ReaderPage() {
+  useBgm("/assets/audio/classics.mp3", 0.12);
   const params = useParams();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -37,6 +41,23 @@ export default function ReaderPage() {
     () => !!data?.passages.some((p) => p.annotation),
     [data],
   );
+
+  /** 汇总本篇所有段落的词条，按 term 去重 */
+  const chapterGlosses = useMemo(() => {
+    if (!data) return [];
+    const seen = new Set<string>();
+    const all: Gloss[] = [];
+    for (const p of data.passages) {
+      if (!p.glosses) continue;
+      for (const g of p.glosses) {
+        if (!seen.has(g.term)) {
+          seen.add(g.term);
+          all.push(g);
+        }
+      }
+    }
+    return all;
+  }, [data]);
 
   const [showVern, setShowVern] = useState(false);
   const [showAnnot, setShowAnnot] = useState(false);
@@ -188,7 +209,9 @@ export default function ReaderPage() {
                   id={p.id}
                   key={p.id}
                 >
-                  <p className="lt-para-text">{p.content}</p>
+                  <p className="lt-para-text">
+                    <GlossText content={p.content} glosses={p.glosses} />
+                  </p>
                   {showVern && p.vernacular && (
                     <p className="lt-para-vern">{p.vernacular}</p>
                   )}
@@ -198,6 +221,37 @@ export default function ReaderPage() {
                 </div>
               ))}
             </div>
+
+            {/* 本篇词条汇总（默认折叠） */}
+            {chapterGlosses.length > 0 && (
+              <details className="lt-chapter-glosses">
+                <summary className="lt-chapter-glosses-title">
+                  本篇词条<span className="lt-chapter-glosses-count">{chapterGlosses.length}</span>
+                </summary>
+                <dl className="lt-chapter-glosses-list">
+                  {chapterGlosses.map((g, i) => {
+                    const charPinyins = parseTermPinyin(g.term, g.pinyin);
+                    return (
+                      <div key={i} className="lt-chapter-gloss-item">
+                        <dt className="lt-gloss-term-dt">
+                          {charPinyins.map((cp, j) =>
+                            cp.isRare && cp.pinyin ? (
+                              <ruby key={j} className="lt-gloss-ruby">
+                                {cp.char}
+                                <rt>{cp.pinyin}</rt>
+                              </ruby>
+                            ) : (
+                              <span key={j}>{cp.char}</span>
+                            ),
+                          )}
+                        </dt>
+                        <dd>{g.text}</dd>
+                      </div>
+                    );
+                  })}
+                </dl>
+              </details>
+            )}
 
             <nav className="lt-reader-nav">
               <button

@@ -1,4 +1,5 @@
 import { Footer } from '../components/Common/Footer';
+import { useBgm } from '../store/audioStore';
 import '../components/Circle/circle.css';
 
 const FEATURES = [
@@ -11,6 +12,7 @@ const FEATURES = [
 ];
 
 export default function CirclePage() {
+  useBgm("/assets/audio/downloadpage.mp3", 0.3);
   return (
     <div className="circle-page">
       {/* Hero Banner */}

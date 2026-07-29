@@ -1029,3 +1029,109 @@
   .lt-reader-bar { padding: 0 var(--space-md); }
   .lt-reader-bar-cur { display: none; }
 }
+
+/* ── 本篇词条汇总（篇章末尾） ── */
+/* 本篇词条：折叠式竖向排列 */
+.lt-chapter-glosses {
+  margin-top: var(--space-xl);
+  padding-top: var(--space-lg);
+  border-top: 1px solid var(--rule);
+}
+
+.lt-chapter-glosses > summary {
+  list-style: none;
+  cursor: pointer;
+  user-select: none;
+  outline: none;
+}
+.lt-chapter-glosses > summary::-webkit-details-marker {
+  display: none;
+}
+
+.lt-chapter-glosses-title {
+  font-family: var(--font-serif);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: 0.08em;
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+/* 折叠三角：位于标题左侧，展开时顺时针旋转 90° */
+.lt-chapter-glosses-title::before {
+  content: "▶";
+  display: inline-block;
+  font-size: 0.6em;
+  color: var(--muted);
+  transform: rotate(0deg);
+  transition: transform 0.2s var(--ease-ink);
+  margin-right: 2px;
+}
+.lt-chapter-glosses[open] .lt-chapter-glosses-title::before {
+  transform: rotate(90deg);
+}
+
+.lt-chapter-glosses-count {
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: var(--muted);
+  background: var(--bg-darker, #f5f3ef);
+  border-radius: 99px;
+  padding: 1px 8px;
+  margin-left: 4px;
+}
+
+.lt-chapter-glosses-list {
+  margin-top: var(--space-md);
+}
+
+/* 网格对齐：左列固定宽度，释义列首字全部对齐 */
+.lt-chapter-gloss-item {
+  display: grid;
+  grid-template-columns: 10em 1fr;
+  gap: var(--space-sm) var(--space-xl);
+  padding: var(--space-xs) 0;
+  border-bottom: 1px dashed var(--rule);
+  align-items: start;
+}
+
+.lt-chapter-gloss-item:last-child {
+  border-bottom: none;
+}
+
+.lt-chapter-gloss-item dt {
+  font-family: var(--font-serif);
+  font-weight: 700;
+  color: var(--accent);
+  text-align: left;
+  /* ruby 按字标音：block 确保长词条可换行 */
+  display: block;
+  line-height: 2.4;
+}
+
+/* 生僻字 ruby 标注 */
+.lt-gloss-ruby {
+  ruby-position: over;
+}
+
+.lt-gloss-ruby rt {
+  font-family: var(--font-sans);
+  font-size: 0.62rem;
+  font-weight: 400;
+  color: var(--muted);
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+  text-align: center;
+}
+
+.lt-chapter-gloss-item dd {
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  color: var(--ink-light);
+  line-height: 1.8;
+  text-align: left;
+  min-width: 0;
+}

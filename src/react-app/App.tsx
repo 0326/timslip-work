@@ -5,6 +5,7 @@ import { Loading } from "./components/Common/Loading";
 import { ErrorBoundary } from "./components/Common/ErrorBoundary";
 import { Header } from "./components/Common/Header";
 import { AuthProvider } from "./store/authStore";
+import { AudioProvider } from "./store/audioStore";
 import Home from "./pages/Home";
 
 const SearchPage = lazy(() => import("./pages/SearchPage"));
@@ -98,12 +99,14 @@ export default function App() {
     <ErrorBoundary>
       <BrowserRouter>
         <AuthProvider>
-          <Header />
-          <div className="site-body">
-            <Suspense fallback={<Loading />}>
-              <AnimatedRoutes />
-            </Suspense>
-          </div>
+          <AudioProvider>
+            <Header />
+            <div className="site-body">
+              <Suspense fallback={<Loading />}>
+                <AnimatedRoutes />
+              </Suspense>
+            </div>
+          </AudioProvider>
         </AuthProvider>
       </BrowserRouter>
     </ErrorBoundary>

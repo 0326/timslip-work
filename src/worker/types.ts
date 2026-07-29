@@ -4,6 +4,8 @@
 export interface Gloss {
   term: string;
   text: string;
+  /** 注音（拼音），可选；生僻字词可附拼音降低阅读障碍 */
+  pinyin?: string;
 }
 
 export interface Passage {
@@ -66,12 +68,14 @@ export interface BookCatalog {
   chapters: CatalogChapter[];
 }
 
-/** 阅读页的一段：含白话/注释 */
+/** 阅读页的一段：含白话/注释/词条 */
 export interface ChapterPassage {
   id: string;
   content: string;
   vernacular: string | null;
   annotation: string | null;
+  /** 词条（生僻字词/特殊名词注释），与 passages.glosses 同源 */
+  glosses: Gloss[] | null;
   order_idx: number;
   version: number;
 }

@@ -3,8 +3,10 @@ import { useIsMobile } from "../hooks/useMediaQuery";
 import { Loading } from "../components/Common/Loading";
 import { Timeline } from "../components/Timeline/Timeline";
 import { TimelineMobile } from "../components/Timeline/TimelineMobile";
+import { useBgm } from "../store/audioStore";
 
 export default function Home() {
+  useBgm("/assets/audio/mainpage.mp3", 0.22);
   const { data, loading, error, refetch } = useTimeline();
   const isMobile = useIsMobile();
 
