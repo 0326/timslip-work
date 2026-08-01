@@ -294,8 +294,6 @@
 
 .portal-center-cta.locked {
   opacity: 0.35;
-  cursor: default;
-  pointer-events: none;
 }
 
 /* === 黑洞穿越态：方形 → 圆形 + 朱砂事件视界发光 === */
@@ -781,4 +779,84 @@ body:has(.portal-cta-warp) .portal-timeline-bar {
   .portal-implosion-canvas {
     display: none;
   }
+}
+
+/* === Lock Modal === */
+.portal-lock-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+  animation: portal-overlay-fade 0.3s ease;
+}
+
+.portal-lock-modal {
+  background: #f5f0e8;
+  border-radius: 12px;
+  padding: 2.5rem 2rem;
+  max-width: 360px;
+  width: 90%;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: portal-modal-enter 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.portal-lock-modal-icon {
+  color: var(--ink);
+  margin-bottom: 1rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.portal-lock-modal-title {
+  font-family: var(--font-serif);
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 0.75rem;
+  letter-spacing: 0.1em;
+}
+
+.portal-lock-modal-desc {
+  font-size: 0.85rem;
+  color: var(--muted);
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
+}
+
+.portal-lock-modal-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.6rem 2rem;
+  border: 1px solid var(--ink);
+  border-radius: 2px;
+  background: transparent;
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  letter-spacing: 0.15em;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.portal-lock-modal-btn:hover {
+  background: var(--accent);
+  color: var(--bg);
+  border-color: var(--accent);
+}
+
+@keyframes portal-overlay-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes portal-modal-enter {
+  from { opacity: 0; transform: scale(0.9) translateY(10px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
 }

@@ -137,7 +137,7 @@ export const TIMELINE_DATA: TimelineData = {
       "book_label": "《后汉书》",
       "img": "dynasties/d10.jpg",
       "description": "光武中兴，班超出使西域。党锢之祸，汉室倾颓。",
-      "is_active": false
+      "is_active": true
     },
     {
       "id": "d11",
@@ -150,7 +150,7 @@ export const TIMELINE_DATA: TimelineData = {
       "book_label": "《三国志》",
       "img": "dynasties/d11.jpg",
       "description": "魏蜀吴三足鼎立，英雄辈出的时代。",
-      "is_active": false
+      "is_active": true
     },
     {
       "id": "d12",
@@ -163,7 +163,7 @@ export const TIMELINE_DATA: TimelineData = {
       "book_label": "《晋书》",
       "img": "dynasties/d12.jpg",
       "description": "司马氏代魏，短暂统一。八王之乱，衣冠南渡。",
-      "is_active": false
+      "is_active": true
     },
     {
       "id": "d13",
@@ -176,7 +176,7 @@ export const TIMELINE_DATA: TimelineData = {
       "book_label": "《晋书》",
       "img": "dynasties/d13.jpg",
       "description": "偏安江南，祖逖北伐。淝水之战，以少胜多。",
-      "is_active": false
+      "is_active": true
     },
     {
       "id": "d15",
@@ -192,7 +192,7 @@ export const TIMELINE_DATA: TimelineData = {
       "book_label": "《魏书》《北齐书》《周书》《北史》",
       "img": "dynasties/d15.jpg",
       "description": "北魏孝文帝改革，北齐北周对峙。",
-      "is_active": false
+      "is_active": true
     },
     {
       "id": "d14",
@@ -209,7 +209,7 @@ export const TIMELINE_DATA: TimelineData = {
       "book_label": "《宋书》《南齐书》《梁书》《陈书》《南史》",
       "img": "dynasties/d14.jpg",
       "description": "宋齐梁陈四朝更迭，南北对峙。",
-      "is_active": false
+      "is_active": true
     },
     {
       "id": "d16",
@@ -222,7 +222,7 @@ export const TIMELINE_DATA: TimelineData = {
       "book_label": "《隋书》",
       "img": "dynasties/d16.jpg",
       "description": "开凿大运河，科举制诞生。二世而亡。",
-      "is_active": false
+      "is_active": true
     },
     {
       "id": "d17",
@@ -236,7 +236,7 @@ export const TIMELINE_DATA: TimelineData = {
       "book_label": "《旧唐书》《新唐书》",
       "img": "dynasties/d17.jpg",
       "description": "贞观之治，开元盛世。",
-      "is_active": false
+      "is_active": true
     },
     {
       "id": "d18",
@@ -250,7 +250,7 @@ export const TIMELINE_DATA: TimelineData = {
       "book_label": "《旧五代史》《新五代史》",
       "img": "dynasties/d18.jpg",
       "description": "乱世纷争，十国并立。",
-      "is_active": false
+      "is_active": true
     },
     {
       "id": "d21",
@@ -263,7 +263,7 @@ export const TIMELINE_DATA: TimelineData = {
       "book_label": "《辽史》",
       "img": "dynasties/d21.jpg",
       "description": "契丹帝国，草原霸主。",
-      "is_active": false
+      "is_active": true
     },
     {
       "id": "d19",
@@ -276,7 +276,7 @@ export const TIMELINE_DATA: TimelineData = {
       "book_label": "《宋史》",
       "img": "dynasties/d19.jpg",
       "description": "文治鼎盛，经济繁荣。",
-      "is_active": false
+      "is_active": true
     },
     {
       "id": "d22",
@@ -289,7 +289,7 @@ export const TIMELINE_DATA: TimelineData = {
       "book_label": "《金史》",
       "img": "dynasties/d22.jpg",
       "description": "女真崛起，靖康之变。",
-      "is_active": false
+      "is_active": true
     },
     {
       "id": "d20",
@@ -302,7 +302,7 @@ export const TIMELINE_DATA: TimelineData = {
       "book_label": "《宋史》",
       "img": "dynasties/d20.jpg",
       "description": "偏安江南，岳飞抗金。",
-      "is_active": false
+      "is_active": true
     },
     {
       "id": "d23",
@@ -315,7 +315,7 @@ export const TIMELINE_DATA: TimelineData = {
       "book_label": "《元史》",
       "img": "dynasties/d23.jpg",
       "description": "蒙古铁骑，横扫欧亚。",
-      "is_active": false
+      "is_active": true
     },
     {
       "id": "d24",
@@ -328,7 +328,7 @@ export const TIMELINE_DATA: TimelineData = {
       "book_label": "《明史》",
       "img": "dynasties/d24.jpg",
       "description": "大明风华，郑和下西洋。",
-      "is_active": false
+      "is_active": true
     }
   ],
   "events": []

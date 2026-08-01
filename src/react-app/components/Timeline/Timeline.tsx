@@ -88,6 +88,8 @@ export function Timeline({ data }: TimelineProps) {
   const [warp, setWarp] = useState(false);
   // 奇点态：点击 CTA 后触发，整页像素被吸入黑洞，然后跳转
   const [singularity, setSingularity] = useState(false);
+  // 加锁弹窗：点击非史记朝代时提示"请先完成《穿越·史记》"
+  const [showLockModal, setShowLockModal] = useState(false);
   const [isImageTransitioning, setIsImageTransitioning] = useState(false);
   const [previousDynasty, setPreviousDynasty] = useState<Dynasty | null>(null);
   // Text cross-fade: previous text stays visible while new text fades in on top.
@@ -108,8 +110,9 @@ export function Timeline({ data }: TimelineProps) {
   const selectedDynasty = dynasties[selectedIndex] || dynasties[0];
   const trackWidth = dynasties.length * SLOT_WIDTH;
 
-  // 只有已开启（史记）朝代的 CTA 可穿越；书名从 book_label 取首部（《史记》→ 史记）
-  const ctaActive = !!(selectedDynasty.is_active && selectedDynasty.book_ids?.includes("shiji"));
+  // 所有朝代按钮均显示"立即穿越"及黑洞特效，非史记点击弹窗提示
+  const ctaActive = true;
+  const isShiji = selectedDynasty.book_ids?.includes("shiji");
   const bookName =
     selectedDynasty.book_label?.match(/《(.+?)》/)?.[1] || selectedDynasty.book_label || "史记";
 
@@ -264,9 +267,12 @@ export function Timeline({ data }: TimelineProps) {
         goToRef.current?.(next);
       } else if (e.key === "Enter") {
         const d = dynasties[currentIndexRef.current];
-        if (d?.is_active && d.book_ids?.includes("shiji")) {
+        if (d?.book_ids?.includes("shiji")) {
           playClick();
           window.location.href = "https://shiji.timeslip.work";
+        } else {
+          playClick();
+          setShowLockModal(true);
         }
       }
     };
@@ -292,13 +298,16 @@ export function Timeline({ data }: TimelineProps) {
 
   const handleCtaClick = () => {
     if (singularity) return;
-    if (selectedDynasty.is_active && selectedDynasty.book_ids?.includes("shiji")) {
+    if (isShiji) {
       // 进入奇点态：ImplosionCanvas 负责截图整页 → 像素吸入 → onDone 跳转
       playClick();
       setWarp(true);
       setSingularity(true);
+    } else {
+      // 弹窗提示先完成《穿越·史记》
+      playClick();
+      setShowLockModal(true);
     }
-    // 其他史书暂未开启穿越
   };
 
   return (
@@ -368,16 +377,16 @@ export function Timeline({ data }: TimelineProps) {
         <button
           id="portal-center-cta"
           onClick={handleCtaClick}
-          onMouseEnter={() => { if (ctaActive) { setWarp(true); setVortexActive(true); } }}
+          onMouseEnter={() => { setWarp(true); setVortexActive(true); }}
           onMouseLeave={() => { if (!singularity) { setWarp(false); setVortexActive(false); } }}
-          onFocus={() => { if (ctaActive) { setWarp(true); setVortexActive(true); } }}
+          onFocus={() => { setWarp(true); setVortexActive(true); }}
           onBlur={() => { if (!singularity) { setWarp(false); setVortexActive(false); } }}
-          className={`portal-center-cta${ctaActive ? "" : " locked"}${warp && ctaActive ? " portal-cta-warp" : ""}`}
+          className={`portal-center-cta${warp ? " portal-cta-warp" : ""}`}
         >
           <span>
-            {ctaActive ? (warp ? `穿越·${bookName}` : "立即穿越") : "尚未开启"}
+            {warp ? `穿越·${bookName}` : "立即穿越"}
           </span>
-          {ctaActive && !warp && (
+          {!warp && (
             <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
               <path d="M3 8h10M9 4l4 4-4 4" />
             </svg>
@@ -389,6 +398,28 @@ export function Timeline({ data }: TimelineProps) {
       <div className={`portal-scroll-hint${showScrollHint ? "" : " hidden"}`}>
         滚动 · 拖动，逆流穿越历史
       </div>
+
+      {/* Lock Modal - 提示先完成《穿越·史记》 */}
+      {showLockModal && (
+        <div className="portal-lock-modal-overlay" onClick={() => setShowLockModal(false)}>
+          <div className="portal-lock-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="portal-lock-modal-icon">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <rect x="5" y="11" width="14" height="10" rx="1.5" />
+                <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+                <circle cx="12" cy="16" r="1" fill="currentColor" />
+              </svg>
+            </div>
+            <div className="portal-lock-modal-title">请先完成《穿越·史记》</div>
+            <div className="portal-lock-modal-desc">
+              完成《史记》的穿越之旅后，方可开启其他朝代篇章
+            </div>
+            <button className="portal-lock-modal-btn" onClick={() => setShowLockModal(false)}>
+              知道了
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Floating Bubble - Circle Mini Program */}
       <FloatingBubble />
