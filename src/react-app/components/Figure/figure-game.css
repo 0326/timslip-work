@@ -714,20 +714,23 @@
 
 .fg-actions {
   display: flex;
-  gap: 12px;
+  gap: 8px;
   margin-top: 26px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
 }
 .fg-act {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 12px 22px;
+  justify-content: center;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+  padding: 10px 12px;
   border-radius: 999px;
   font-family: var(--font-serif);
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.04em;
   cursor: pointer;
   text-decoration: none;
   border: 1px solid transparent;
@@ -790,6 +793,213 @@
 .fg-act.is-ghost .fg-act-count {
   background: color-mix(in srgb, var(--idc) 70%, #000);
 }
+
+/* 添加微信按钮（微信绿） */
+.fg-act.is-wechat .fg-act-icon { background: rgba(255,255,255,0.28); }
+.fg-act.is-wechat {
+  background: linear-gradient(180deg, #2bd471, #07C160);
+  color: #fff;
+  border-color: transparent;
+  box-shadow: 0 8px 24px rgba(7, 193, 96, 0.4);
+}
+.fg-act.is-wechat:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px rgba(7, 193, 96, 0.55);
+}
+.fg-act.is-loading {
+  opacity: 0.65;
+  cursor: wait;
+  pointer-events: none;
+}
+
+/* ============ 微信小程序码弹窗 ============ */
+.fg-qr-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  background: rgba(15, 12, 9, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.fg-qr-modal {
+  position: relative;
+  z-index: 81;
+  width: 340px;
+  max-width: calc(100vw - 48px);
+  background: linear-gradient(180deg, #1c1a17, #15130f);
+  border: 1px solid rgba(7, 193, 96, 0.28);
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+  padding: 28px 28px 22px;
+  color: #ece2d0;
+  font-family: var(--font-serif);
+  text-align: center;
+}
+.fg-qr-close {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: rgba(255,255,255,0.06);
+  color: #9a8f7d;
+  border-radius: 50%;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background var(--duration-fast) var(--ease-ink), color var(--duration-fast) var(--ease-ink);
+}
+.fg-qr-close:hover { background: rgba(255,255,255,0.14); color: #ece2d0; }
+.fg-qr-head { margin-bottom: 20px; }
+.fg-qr-title {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  margin: 0 0 6px;
+  color: #fff;
+}
+.fg-qr-sub {
+  font-size: 12.5px;
+  color: #9a8f7d;
+  margin: 0;
+  font-family: var(--font-sans);
+  letter-spacing: 0.02em;
+}
+.fg-qr-code-wrap {
+  width: 240px;
+  height: 240px;
+  margin: 0 auto 18px;
+  background: #fff;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.fg-qr-img {
+  width: 220px;
+  height: 220px;
+  object-fit: contain;
+}
+.fg-qr-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  color: #666;
+  font-size: 13px;
+  font-family: var(--font-sans);
+}
+.fg-qr-spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid #eee;
+  border-top-color: #07C160;
+  border-radius: 50%;
+  animation: fg-qr-spin 0.9s linear infinite;
+}
+@keyframes fg-qr-spin { to { transform: rotate(360deg); } }
+.fg-qr-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  color: #c0392b;
+  font-size: 13px;
+  font-family: var(--font-sans);
+  padding: 0 12px;
+  text-align: center;
+}
+.fg-qr-error-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #fdecea;
+  color: #c0392b;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+.fg-qr-retry {
+  margin-top: 4px;
+  padding: 6px 18px;
+  border: 1px solid #07C160;
+  background: transparent;
+  color: #07C160;
+  border-radius: 999px;
+  font-size: 13px;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  transition: background var(--duration-fast) var(--ease-ink);
+}
+.fg-qr-retry:hover { background: rgba(7,193,96,0.12); }
+.fg-qr-foot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.fg-qr-wechat-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 14px;
+  background: #07C160;
+  color: #fff;
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 600;
+  font-family: var(--font-sans);
+}
+.fg-qr-tip {
+  font-size: 11.5px;
+  color: #9a8f7d;
+  font-family: var(--font-sans);
+  letter-spacing: 0.02em;
+  line-height: 1.6;
+}
+
+/* ============ 错误提示 Toast ============ */
+.fg-qr-toast {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 9999;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 28px;
+  background: linear-gradient(180deg, #2a1818, #1f1313);
+  border: 1px solid rgba(192, 57, 43, 0.4);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  color: #f5b7b1;
+  font-size: 14px;
+  font-family: var(--font-sans);
+  animation: fg-toast-in 0.3s ease-out;
+}
+.fg-qr-toast-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #c0392b;
+  color: #fff;
+  font-weight: 700;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+@keyframes fg-toast-in {
+  from { opacity: 0; transform: translate(-50%, -50%) scale(0.92); }
+  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
 
 /* ============ 生平历程抽屉（右 2/3 屏） ============ */
 .fg-drawer-backdrop {

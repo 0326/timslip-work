@@ -1058,6 +1058,75 @@ app.get("/api/figures/:id", async (c) => {
   return c.json(detail);
 });
 
+// 小程序码：仅五星角色，供 PC 端扫码跳转小程序对应角色详情页
+// 1. 校验 figures.star=5 → 2. KV 命中返回缓存 URL → 3. fetch 小程序云函数 HTTP 触发器生成 → 4. 缓存到 KV
+app.get("/api/figures/:id/qrcode", async (c) => {
+  const db = getDb(c.env);
+  const id = c.req.param("id");
+
+  // 校验人物存在且为五星
+  const row = await db.prepare("SELECT id, star FROM figures WHERE id = ?").bind(id).first<{ id: string; star: number }>();
+  if (!row) return errorResponse("NOT_FOUND", "Figure not found", 404);
+  if (!row.star || row.star < 5) return errorResponse("NOT_FIVE_STAR", "仅五星角色支持小程序码", 403);
+
+  const fnUrl = c.env.MINI_QRCODE_FN_URL;
+  if (!fnUrl) return errorResponse("QRCODE_NOT_CONFIGURED", "未配置小程序码云函数 URL", 500);
+
+  // KV 缓存命中（临时 URL 约 2h 过期，TTL 1.5h 提前刷新）
+  const cacheKey = `qrcode:${id}`;
+  const cached = await kvGetSafe(c.env, cacheKey);
+  if (cached) {
+    return c.json({ url: cached, cached: true });
+  }
+
+  // 调小程序云函数 HTTP 触发器
+  const reqUrl = `${fnUrl}${fnUrl.includes("?") ? "&" : "?"}figureId=${encodeURIComponent(id)}`;
+  let resp: Response;
+  try {
+    resp = await fetch(reqUrl, { method: "GET", headers: { "Content-Type": "application/json" } });
+  } catch (e) {
+    return errorResponse("QRCODE_FETCH_FAILED", `调用云函数失败: ${(e as Error).message}`, 502);
+  }
+  if (!resp.ok) {
+    const errText = await resp.text().catch(() => "");
+    console.error("[qrcode] cloud function HTTP error:", resp.status, errText.slice(0, 500));
+    return errorResponse("QRCODE_FN_ERROR", `云函数返回 ${resp.status}`, 502);
+  }
+
+  // 兼容两种返回格式：
+  // 1. HTTP 网关格式: { statusCode: 200, body: '{"code":0,...}' }
+  // 2. 直接 JSON: { code: 0, data: { url: "..." } }
+  const rawText = await resp.text();
+  let parsed: any;
+  try {
+    parsed = JSON.parse(rawText);
+  } catch {
+    console.error("[qrcode] cloud function returned non-JSON:", rawText.slice(0, 500));
+    return errorResponse("QRCODE_GENERATE_FAILED", "云函数返回非 JSON", 502);
+  }
+
+  // 如果是 HTTP 网关包装格式，解析 body
+  let data = parsed;
+  if (parsed && typeof parsed.body === "string") {
+    try {
+      data = JSON.parse(parsed.body);
+    } catch {
+      console.error("[qrcode] failed to parse gateway body:", parsed.body.slice(0, 500));
+      return errorResponse("QRCODE_GENERATE_FAILED", "云函数返回格式异常", 502);
+    }
+  }
+
+  if (data.code !== 0 || !data.data || !data.data.url) {
+    console.error("[qrcode] cloud function returned error:", JSON.stringify(data).slice(0, 500));
+    const errMsg = data.data?.error || data.message || "云函数未返回有效 URL";
+    return errorResponse("QRCODE_GENERATE_FAILED", errMsg, 502);
+  }
+  const url = data.data.url;
+  // 缓存 1.5 小时
+  kvPutSafe(c, cacheKey, url, 5400);
+  return c.json({ url, cached: false });
+});
+
 app.get("/api/figures/:id/relations", async (c) => {
   const db = getDb(c.env);
   const id = c.req.param("id");

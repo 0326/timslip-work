@@ -14,6 +14,7 @@ import {
 } from "../data/figure-assets";
 import { FigureSymbol } from "../components/Figure/FigureSymbol";
 import { Loading } from "../components/Common/Loading";
+import { WechatQrcodeModal } from "../components/Figure/WechatQrcodeModal";
 import { useAudio, useBgm } from "../store/audioStore";
 import "../components/Figure/figure.css";
 import "../components/Figure/figure-game.css";
@@ -205,6 +206,10 @@ export default function FigureDetailPage() {
   const relations = relData?.relations || [];
   const error = apiError ? (apiError.error?.message || "加载失败") : null;
   const [questOpen, setQuestOpen] = useState(false);
+  const [qrOpen, setQrOpen] = useState(false);
+  const [qrUrl, setQrUrl] = useState<string | null>(null);
+  const [qrError, setQrError] = useState<string | null>(null);
+  const [qrLoading, setQrLoading] = useState(false);
   const [navList, setNavList] = useState<Figure[]>([]);
 
   const localBundle = useMemo(() => (id ? localBundleAsFigureBundle(id) : null), [id]);
@@ -239,7 +244,7 @@ export default function FigureDetailPage() {
   }, []);
 
   // 切换人物时关闭生平抽屉
-  useEffect(() => { setQuestOpen(false); }, [id]);
+  useEffect(() => { setQuestOpen(false); setQrOpen(false); setQrError(null); }, [id]);
 
   // 计算前后人物
   const navIndex = useMemo(() => {
@@ -435,6 +440,41 @@ export default function FigureDetailPage() {
           )}
 
           <div className="fg-actions">
+            {displayFigure.star >= 5 && (
+              <button
+                className={`fg-act is-wechat${qrLoading ? " is-loading" : ""}`}
+                disabled={qrLoading}
+                onClick={async () => {
+                  setQrError(null);
+                  setQrOpen(true);
+                  setQrUrl(null);
+                  setQrLoading(true);
+                  try {
+                    const res = await fetch(`/api/figures/${displayFigure.id}/qrcode`);
+                    if (!res.ok) {
+                      const body = await res.json().catch(() => ({}));
+                      throw new Error(body?.error?.message || `HTTP ${res.status}`);
+                    }
+                    const data = await res.json();
+                    if (data.url) {
+                      setQrUrl(data.url);
+                    } else {
+                      throw new Error("二维码地址为空");
+                    }
+                  } catch (e: unknown) {
+                    setQrOpen(false);
+                    setQrError((e as Error).message || "生成失败");
+                    setTimeout(() => setQrError(null), 4000);
+                  } finally {
+                    setQrLoading(false);
+                  }
+                }}
+                onMouseEnter={playHoverBlip}
+              >
+                <span className="fg-act-icon" aria-hidden="true">{qrLoading ? "…" : "微"}</span>
+                {qrLoading ? "生成中" : "添加微信"}
+              </button>
+            )}
             <button
               className="fg-act is-primary"
               onClick={() => setQuestOpen(true)}
@@ -481,6 +521,15 @@ export default function FigureDetailPage() {
       })()}
 
       <QuestDrawer open={questOpen} onClose={() => setQuestOpen(false)} figure={displayFigure} />
+      {displayFigure.star >= 5 && (
+        <WechatQrcodeModal open={qrOpen} onClose={() => setQrOpen(false)} figure={displayFigure} qrcodeUrl={qrUrl} />
+      )}
+      {qrError && (
+        <div className="fg-qr-toast">
+          <span className="fg-qr-toast-icon">!</span>
+          <span>{qrError}</span>
+        </div>
+      )}
     </div>
   );
 }

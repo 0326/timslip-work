@@ -14,6 +14,8 @@ declare namespace Cloudflare {
 		TURSO_DATABASE_URL: string;
 		TURSO_AUTH_TOKEN: string;
 		JWT_SECRET: string;
+		/** 小程序 figureQrcode 云函数 HTTP 触发器 URL（secret） */
+		MINI_QRCODE_FN_URL: string;
 	}
 }
 interface Env extends Cloudflare.Env {}
