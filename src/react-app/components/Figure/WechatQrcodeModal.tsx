@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import type { FigureDetail } from "../../data/types";
 
@@ -12,13 +13,25 @@ interface WechatQrcodeModalProps {
 export function WechatQrcodeModal({ open, onClose, figure, qrcodeUrl }: WechatQrcodeModalProps) {
   const [imgLoaded, setImgLoaded] = useState(false);
   const [imgError, setImgError] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    return () => setMounted(false);
+  }, []);
 
   // Esc 关闭
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    // 禁止 body 滚动
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prev;
+    };
   }, [open, onClose]);
 
   // URL 变化时重置图片状态
@@ -27,10 +40,12 @@ export function WechatQrcodeModal({ open, onClose, figure, qrcodeUrl }: WechatQr
     setImgError(false);
   }, [qrcodeUrl]);
 
-  return (
+  if (!mounted) return null;
+
+  const modalContent = (
     <AnimatePresence>
       {open && (
-        <>
+        <div className="fg-qr-root">
           <motion.div
             className="fg-qr-backdrop"
             initial={{ opacity: 0 }}
@@ -41,11 +56,12 @@ export function WechatQrcodeModal({ open, onClose, figure, qrcodeUrl }: WechatQr
           />
           <motion.div
             className="fg-qr-modal"
-            initial={{ opacity: 0, scale: 0.92, y: 12 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 8 }}
+            initial={{ opacity: 0, scale: 0.92 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
             transition={{ type: "spring", stiffness: 300, damping: 26 }}
             role="dialog"
+            aria-modal="true"
             aria-label={`微信扫码 · 与${figure.name}对话`}
           >
             <button className="fg-qr-close" onClick={onClose} aria-label="关闭">✕</button>
@@ -56,21 +72,18 @@ export function WechatQrcodeModal({ open, onClose, figure, qrcodeUrl }: WechatQr
             </div>
 
             <div className="fg-qr-code-wrap">
-              {/* 没有 URL 时：请求中 */}
               {!qrcodeUrl && (
                 <div className="fg-qr-loading">
                   <div className="fg-qr-spinner" />
                   <span>正在生成小程序码…</span>
                 </div>
               )}
-              {/* 有 URL 但图片加载中 */}
               {qrcodeUrl && !imgLoaded && !imgError && (
                 <div className="fg-qr-loading">
                   <div className="fg-qr-spinner" />
                   <span>加载中…</span>
                 </div>
               )}
-              {/* 图片加载失败 */}
               {qrcodeUrl && imgError && (
                 <div className="fg-qr-loading">
                   <span style={{ color: "#c0392b", fontSize: "12px" }}>二维码加载失败</span>
@@ -84,7 +97,6 @@ export function WechatQrcodeModal({ open, onClose, figure, qrcodeUrl }: WechatQr
                   </a>
                 </div>
               )}
-              {/* 图片（始终渲染，通过 opacity 控制可见性） */}
               {qrcodeUrl && (
                 <img
                   className="fg-qr-img"
@@ -103,8 +115,10 @@ export function WechatQrcodeModal({ open, onClose, figure, qrcodeUrl }: WechatQr
               <span className="fg-qr-tip">扫码后进入小程序角色详情页，点击「开始聊天」即可对话</span>
             </div>
           </motion.div>
-        </>
+        </div>
       )}
     </AnimatePresence>
   );
+
+  return createPortal(modalContent, document.body);
 }

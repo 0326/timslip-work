@@ -1073,7 +1073,8 @@ app.get("/api/figures/:id/qrcode", async (c) => {
   if (!fnUrl) return errorResponse("QRCODE_NOT_CONFIGURED", "未配置小程序码云函数 URL", 500);
 
   // KV 缓存命中（临时 URL 约 2h 过期，TTL 1.5h 提前刷新）
-  const cacheKey = `qrcode:${id}`;
+  // v2 前缀：缓存按 envVersion 隔离，切换 trial/release 时自动失效旧缓存
+  const cacheKey = `qrcode:v2:${id}`;
   const cached = await kvGetSafe(c.env, cacheKey);
   if (cached) {
     return c.json({ url: cached, cached: true });
