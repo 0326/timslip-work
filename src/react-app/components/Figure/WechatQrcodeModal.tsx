@@ -25,7 +25,6 @@ export function WechatQrcodeModal({ open, onClose, figure, qrcodeUrl }: WechatQr
     if (!open) return;
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
     window.addEventListener("keydown", onKey);
-    // 禁止 body 滚动
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => {
@@ -41,6 +40,9 @@ export function WechatQrcodeModal({ open, onClose, figure, qrcodeUrl }: WechatQr
   }, [qrcodeUrl]);
 
   if (!mounted) return null;
+
+  // 头像优先级：R2 资产头像 > 云存储 avatar_url > emoji 兜底
+  const avatarSrc = figure.avatar || figure.avatar_url || null;
 
   const modalContent = (
     <AnimatePresence>
@@ -75,7 +77,7 @@ export function WechatQrcodeModal({ open, onClose, figure, qrcodeUrl }: WechatQr
               {!qrcodeUrl && (
                 <div className="fg-qr-loading">
                   <div className="fg-qr-spinner" />
-                  <span>正在生成小程序码…</span>
+                  <span>正在问{figure.name}要微信号，稍等…</span>
                 </div>
               )}
               {qrcodeUrl && !imgLoaded && !imgError && (
@@ -98,21 +100,29 @@ export function WechatQrcodeModal({ open, onClose, figure, qrcodeUrl }: WechatQr
                 </div>
               )}
               {qrcodeUrl && (
-                <img
-                  className="fg-qr-img"
-                  src={qrcodeUrl}
-                  alt={`${figure.name} 小程序码`}
-                  referrerPolicy="no-referrer"
-                  onLoad={() => setImgLoaded(true)}
-                  onError={() => setImgError(true)}
-                  style={{ display: imgLoaded ? "block" : "none" }}
-                />
+                <div className="fg-qr-img-box" style={{ display: imgLoaded ? "block" : "none" }}>
+                  <img
+                    className="fg-qr-img"
+                    src={qrcodeUrl}
+                    alt={`${figure.name} 小程序码`}
+                    referrerPolicy="no-referrer"
+                    onLoad={() => setImgLoaded(true)}
+                    onError={() => setImgError(true)}
+                  />
+                  {avatarSrc && (
+                    <img
+                      className="fg-qr-avatar-overlay"
+                      src={avatarSrc}
+                      alt={figure.name}
+                      referrerPolicy="no-referrer"
+                    />
+                  )}
+                </div>
               )}
             </div>
 
             <div className="fg-qr-foot">
               <span className="fg-qr-wechat-badge">微信扫一扫</span>
-              <span className="fg-qr-tip">扫码后进入小程序角色详情页，点击「开始聊天」即可对话</span>
             </div>
           </motion.div>
         </div>

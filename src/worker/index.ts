@@ -1072,9 +1072,9 @@ app.get("/api/figures/:id/qrcode", async (c) => {
   const fnUrl = c.env.MINI_QRCODE_FN_URL;
   if (!fnUrl) return errorResponse("QRCODE_NOT_CONFIGURED", "未配置小程序码云函数 URL", 500);
 
-  // KV 缓存命中（临时 URL 约 2h 过期，TTL 1.5h 提前刷新）
-  // v2 前缀：缓存按 envVersion 隔离，切换 trial/release 时自动失效旧缓存
-  const cacheKey = `qrcode:v2:${id}`;
+  // KV 缓存命中（临时 URL 签名约 2h 过期，TTL 30min 提前刷新，避免签名过期 403）
+  // v3 前缀：强制失效旧缓存
+  const cacheKey = `qrcode:v3:${id}`;
   const cached = await kvGetSafe(c.env, cacheKey);
   if (cached) {
     return c.json({ url: cached, cached: true });
@@ -1123,8 +1123,8 @@ app.get("/api/figures/:id/qrcode", async (c) => {
     return errorResponse("QRCODE_GENERATE_FAILED", errMsg, 502);
   }
   const url = data.data.url;
-  // 缓存 1.5 小时
-  kvPutSafe(c, cacheKey, url, 5400);
+  // 缓存 30 分钟（临时签名 URL 约 2h 过期，提前刷新避免 403）
+  kvPutSafe(c, cacheKey, url, 1800);
   return c.json({ url, cached: false });
 });
 
