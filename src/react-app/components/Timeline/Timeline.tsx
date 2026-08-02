@@ -111,7 +111,7 @@ export function Timeline({ data }: TimelineProps) {
   const trackWidth = dynasties.length * SLOT_WIDTH;
 
   // 所有朝代按钮均显示"立即穿越"及黑洞特效，非史记点击弹窗提示
-  const ctaActive = true;
+  // const ctaActive = true;
   const isShiji = selectedDynasty.book_ids?.includes("shiji");
   const bookName =
     selectedDynasty.book_label?.match(/《(.+?)》/)?.[1] || selectedDynasty.book_label || "史记";
