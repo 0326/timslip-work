@@ -717,9 +717,9 @@ app.get("/api/figures", async (c) => {
     args.push(minStar);
   }
   if (q) {
-    where.push("(name LIKE ? OR aliases LIKE ? OR bio_summary LIKE ?)");
+    where.push("(name LIKE ? OR aliases LIKE ?)");
     const like = `%${q}%`;
-    args.push(like, like, like);
+    args.push(like, like);
   }
   const whereSql = where.length ? `WHERE ${where.join(" AND ")}` : "";
 
@@ -921,8 +921,8 @@ app.get("/api/figures/graph", async (c) => {
       : 0;
   const EGO_CAP = 300; // 自我子图节点上限，避免枢纽人物爆图
 
-  // KV 缓存；关系为静态数据 → 长 TTL（见下）。v2 = 去重后关系表；KV 不可用时静默跳过。
-  const cacheKey = `graph:v2:top${top}${focusId ? `:${focusId}` : ""}${egoDepth ? `:d${egoDepth}` : ""}`;
+  // KV 缓存；关系为静态数据 → 长 TTL（见下）。v3 = 补充高星人物关系后刷新缓存。
+  const cacheKey = `graph:v3:top${top}${focusId ? `:${focusId}` : ""}${egoDepth ? `:d${egoDepth}` : ""}`;
   try {
     const cached = await c.env.KV.get(cacheKey);
     if (cached) {

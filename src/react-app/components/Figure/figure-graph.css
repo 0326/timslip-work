@@ -187,6 +187,10 @@
   z-index: 1;
   width: 300px;
   max-width: 46vw;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0;
 }
 .fgx-focus-name {
   display: block;
@@ -234,13 +238,43 @@
 }
 .fgx-focus-link:hover { color: #fff; }
 .fgx-focus-link i { font-size: 13px; }
+.fgx-focus-desc {
+  display: block;
+  margin-top: 10px;
+  font-size: 11px;
+  font-family: var(--font-sans);
+  color: rgba(255, 255, 255, 0.4);
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.8);
+}
+.fgx-focus-note {
+  display: block;
+  margin-top: 4px;
+  font-size: 11px;
+  font-family: var(--font-sans);
+  color: rgba(255, 255, 255, 0.3);
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.8);
+  line-height: 1.4;
+}
+
+/* 未选中人物时的左下角信息块 */
+.fgx-legend-info {
+  position: absolute;
+  left: 22px;
+  bottom: 28px;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-family: var(--font-sans);
+  pointer-events: none;
+}
 
 .fgx-legend {
   position: absolute;
-  left: 0; right: 0; bottom: 0;
+  right: 0;
+  bottom: 0;
   z-index: 10;
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
   gap: 16px;
   padding: 12px 22px;
@@ -252,11 +286,16 @@
   justify-content: flex-end;
 }
 .fgx-legend-hint { opacity: 0.7; }
-.fgx-legend-desc { opacity: 0.55; margin-right: auto; }
+.fgx-legend-desc { opacity: 0.55; }
+.fgx-legend-source { opacity: 0.3; font-size: 11px; }
 
 @media (max-width: 768px) {
   .fgx-focus-portrait { height: 60vh; max-width: 72vw; }
-  .fgx-focus-info { left: 16px; bottom: 78px; width: 210px; max-width: 72vw; }
+  .fgx-focus-info { left: 16px; bottom: 16px; width: 210px; max-width: 72vw; }
+  .fgx-legend-info { left: 16px; bottom: 16px; }
   .fgx-legend-hint { display: none; }
   .fgx-legend-desc { font-size: 11px; }
+  .fgx-legend-source { font-size: 10px; }
+  .fgx-focus-desc { font-size: 10px; }
+  .fgx-focus-note { font-size: 10px; }
 }

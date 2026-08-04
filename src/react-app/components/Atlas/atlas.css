@@ -183,6 +183,19 @@
   display: block;
 }
 
+/* 无对应人物档案：禁用态 */
+.atlas-figure.is-disabled {
+  cursor: default;
+  opacity: 0.38;
+}
+.atlas-figure.is-disabled i {
+  background: var(--muted, #8a8a8a);
+  box-shadow: none;
+}
+.atlas-figure.is-disabled:hover i {
+  transform: none;
+}
+
 /* === 信息卡 === */
 .atlas-panel {
   position: absolute;

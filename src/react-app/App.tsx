@@ -18,6 +18,7 @@ const FigurePage = lazy(() => import("./pages/FigurePage"));
 const FigureDetailPage = lazy(() => import("./pages/FigureDetailPage"));
 const BookPage = lazy(() => import("./pages/BookPage"));
 const ReaderPage = lazy(() => import("./pages/ReaderPage"));
+const MyLibraryPage = lazy(() => import("./pages/MyLibraryPage"));
 
 /** 空闲时预加载所有懒加载路由 chunk，消除首次切换的 Suspense 闪烁 */
 function usePreloadRoutes() {
@@ -33,6 +34,7 @@ function usePreloadRoutes() {
       void import("./pages/FigureDetailPage");
       void import("./pages/BookPage");
       void import("./pages/ReaderPage");
+      void import("./pages/MyLibraryPage");
     };
     if ("requestIdleCallback" in window) {
       const id = (window as Window & {
@@ -76,6 +78,7 @@ function AnimatedRoutes() {
           <Route path="/search" element={<SearchPage />} />
           <Route path="/books/:id" element={<BookPage />} />
           <Route path="/read/*" element={<ReaderPage />} />
+          <Route path="/library" element={<MyLibraryPage />} />
           <Route path="/text/*" element={<TextPage />} />
           <Route path="/hub" element={<HubPage />} />
           <Route path="/figures" element={<FigurePage />} />
