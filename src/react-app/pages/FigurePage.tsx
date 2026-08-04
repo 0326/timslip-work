@@ -147,7 +147,9 @@ export default function FigurePage() {
   useBgm("/assets/audio/characters.mp3", 0.3);
   const { playHoverBlip } = useAudio();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [mode, setMode] = useState<ViewMode>("list");
+  const [mode, setMode] = useState<ViewMode>(
+    () => (searchParams.get("view") === "graph" ? "graph" : "list"),
+  );
   const [listItems, setListItems] = useState<FigureListResponse["items"]>([]);
   const [listMeta, setListMeta] = useState<{ total: number; filters: FigureListResponse["filters"] } | null>(null);
   const [listPage, setListPage] = useState(1);
@@ -170,6 +172,9 @@ export default function FigurePage() {
   const graphRef = useRef<FG | null>(null);
   const adjRef = useRef<Map<string, Set<string>>>(new Map());
   const graphDataRef = useRef<GraphData | null>(null);
+  const searchParamsRef = useRef(searchParams);
+  searchParamsRef.current = searchParams;
+  const graphFocusRef = useRef<string | null | undefined>(undefined);
   const starsCleanupRef = useRef<(() => void) | null>(null);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const [graphLoading, setGraphLoading] = useState(false);
@@ -253,6 +258,21 @@ export default function FigurePage() {
     setSearchParams(newParams);
   };
 
+  const switchMode = (m: ViewMode) => {
+    setMode(m);
+    const newParams = new URLSearchParams(searchParams);
+    if (m === "graph") newParams.set("view", "graph");
+    else newParams.delete("view");
+    // 切换模式时清除 focus/depth，确保再次进入星图时重置页面
+    newParams.delete("focus");
+    newParams.delete("depth");
+    setSearchParams(newParams, { replace: true });
+    // 清除星图搜索/选中状态
+    setSearchInput("");
+    setSel(null);
+    setSelPortrait(null);
+  };
+
   const bfs = (start: string) => {
     const dist = new Map<string, number>([[start, 0]]);
     let frontier = [start],
@@ -294,7 +314,7 @@ export default function FigurePage() {
     return buildStarNode(idColor(n), core);
   };
 
-  const focusNode = useCallback((node: GNode) => {
+  const focusNode = useCallback((node: GNode, silent = false) => {
     const G = graphRef.current;
     if (!G) return;
     const dist = bfs(node.id);
@@ -319,14 +339,21 @@ export default function FigurePage() {
           ? REL[l.type] || "rgba(180, 180, 200, 0.4)"
           : "rgba(120, 130, 160, 0.08)",
       );
-    G.d3ReheatSimulation();
+    if (!silent) {
+      G.d3ReheatSimulation();
+      playHoverBlip();
+    }
     setSel(node);
     setSelPortrait(null);
-    playHoverBlip();
-    setTimeout(
-      () => G.cameraPosition({ x: 0, y: 0, z: 220 }, { x: 0, y: 0, z: 0 }, 900),
-      250,
-    );
+    // silent 模式：直接定位相机，不动画延迟（避免与 zoomToFit 冲突导致忽大忽小）
+    if (silent) {
+      G.cameraPosition({ x: 0, y: 0, z: 220 }, { x: 0, y: 0, z: 0 }, 0);
+    } else {
+      setTimeout(
+        () => G.cameraPosition({ x: 0, y: 0, z: 220 }, { x: 0, y: 0, z: 0 }, 900),
+        250,
+      );
+    }
   }, [playHoverBlip]);
 
   const resetView = useCallback(() => {
@@ -371,7 +398,7 @@ export default function FigurePage() {
   }, [selId]);
 
   const buildGraph = useCallback(
-    (node: HTMLDivElement, gData: GraphData) => {
+    (node: HTMLDivElement, gData: GraphData, focusId?: string | null) => {
       const make = ForceGraph3D as unknown as () => FG;
       const G = make()(node)
         .backgroundColor("#04060d")
@@ -391,13 +418,20 @@ export default function FigurePage() {
         .width(node.clientWidth)
         .height(node.clientHeight);
       graphRef.current = G;
-      // 相机先拉远，避免初始挤在簇内；待力导布局收敛后再自动取景
+      // 相机先拉远，避免初始挤在簇内
       G.cameraPosition({ x: 0, y: 0, z: 700 }, { x: 0, y: 0, z: 0 }, 0);
-      let fitted = false;
+      let settled = false;
       G.onEngineStop(() => {
-        if (fitted) return;
-        fitted = true;
-        G.zoomToFit(700, 90);
+        if (settled) return;
+        settled = true;
+        if (focusId) {
+          // 有 focus 目标：直接聚焦，不走 zoomToFit（避免两者冲突导致忽大忽小）
+          const target = gData.nodes.find((n) => n.id === focusId);
+          if (target) focusNode(target, true);
+          else G.zoomToFit(700, 90);
+        } else {
+          G.zoomToFit(700, 90);
+        }
       });
     },
     [focusNode, resetView],
@@ -415,13 +449,37 @@ export default function FigurePage() {
       }
       mountNodeRef.current = node;
       if (graphRef.current) return;
-      if (graphDataRef.current) {
-        buildGraph(node, graphDataRef.current);
+
+      // Read focus/depth from URL via ref (avoids stale closure & dependency churn)
+      const sp = searchParamsRef.current;
+      const urlFocus = sp.get("focus");
+      const urlDepth = sp.get("depth");
+      const depthNum = urlDepth ? Number(urlDepth) : undefined;
+
+      // Reuse cached data only if the focus context matches
+      if (graphDataRef.current && graphFocusRef.current === urlFocus) {
+        buildGraph(node, graphDataRef.current, urlFocus);
+        if (urlFocus) {
+          const target = graphDataRef.current.nodes.find((n) => n.id === urlFocus);
+          if (target) setSearchInput(target.name);
+        } else {
+          setSearchInput("");
+        }
         return;
       }
+
+      graphFocusRef.current = urlFocus;
       setGraphLoading(true);
-      getFigureGraph(2000)
-        .then((gData: GraphData) => {
+      getFigureGraph(2000, urlFocus || undefined, depthNum)
+        .then((rawData: GraphData) => {
+          let gData = rawData;
+          // 无关系人物：仅显示当前节点，不展示全图星图
+          if (urlFocus) {
+            const focusNode = gData.nodes.find((n) => n.id === urlFocus);
+            if (focusNode && focusNode.degree === 0) {
+              gData = { nodes: [focusNode], links: [], total: rawData.total };
+            }
+          }
           graphDataRef.current = gData;
           const adj = new Map<string, Set<string>>();
           gData.nodes.forEach((n) => adj.set(n.id, new Set()));
@@ -432,11 +490,19 @@ export default function FigurePage() {
           adjRef.current = adj;
           setGraphData(gData);
           setGraphLoading(false);
-          if (mountNodeRef.current) buildGraph(mountNodeRef.current, gData);
+          // 填充搜索框为 focus 人物名称
+          if (urlFocus) {
+            const target = gData.nodes.find((n) => n.id === urlFocus);
+            if (target) setSearchInput(target.name);
+          } else {
+            setSearchInput("");
+          }
+          // buildGraph 内部会在引擎停止后自动聚焦（silent 模式，不 reheat）
+          if (mountNodeRef.current) buildGraph(mountNodeRef.current, gData, urlFocus);
         })
         .catch(() => setGraphLoading(false));
     },
-    [buildGraph],
+    [buildGraph, focusNode],
   );
 
   useEffect(() => {
@@ -879,7 +945,7 @@ export default function FigurePage() {
                 <div className="figure-mode-switch">
                   <button
                     className={`figure-mode-btn ${isList ? "active" : ""}`}
-                    onClick={() => setMode("list")}
+                    onClick={() => switchMode("list")}
                     onMouseEnter={playHoverBlip}
                   >
                     <i className="ti ti-layout-grid" />
@@ -887,7 +953,7 @@ export default function FigurePage() {
                   </button>
                   <button
                     className={`figure-mode-btn ${isGraph ? "active" : ""}`}
-                    onClick={() => setMode("graph")}
+                    onClick={() => switchMode("graph")}
                     onMouseEnter={playHoverBlip}
                   >
                     <i className="ti ti-star" />
@@ -910,7 +976,7 @@ export default function FigurePage() {
                   animate="show"
                 >
                   {items.map((figure) => (
-                    <FigureCard key={figure.id} figure={figure} />
+                    <FigureCard key={figure.id} figure={figure} navQuery={`sort=${sort}`} />
                   ))}
                 </motion.div>
               )}
@@ -972,7 +1038,7 @@ export default function FigurePage() {
                 <div className="figure-mode-switch is-dark">
                   <button
                     className={`figure-mode-btn ${isList ? "active" : ""}`}
-                    onClick={() => setMode("list")}
+                    onClick={() => switchMode("list")}
                     onMouseEnter={playHoverBlip}
                   >
                     <i className="ti ti-layout-grid" />
@@ -980,7 +1046,7 @@ export default function FigurePage() {
                   </button>
                   <button
                     className={`figure-mode-btn ${isGraph ? "active" : ""}`}
-                    onClick={() => setMode("graph")}
+                    onClick={() => switchMode("graph")}
                     onMouseEnter={playHoverBlip}
                   >
                     <i className="ti ti-star" />
@@ -1018,16 +1084,32 @@ export default function FigurePage() {
                   <Link to={`/figures/${sel.id}`} className="fgx-focus-link">
                     查看详情 <i className="ti ti-arrow-right" />
                   </Link>
+                  {graphData && (
+                    <span className="fgx-focus-desc">
+                      {graphData.nodes.length === 1 && graphData.links.length === 0
+                        ? "独立人物 · 暂无关系数据"
+                        : <>人脉度数前 {graphData.nodes.length} 人 · 全库共 {graphData.total ?? graphData.nodes.length} 人</>
+                      }
+                    </span>
+                  )}
+                  <span className="fgx-focus-note">关系数据源自二十四史正传记载</span>
                 </div>
               </div>
             )}
 
-            <div className="fgx-legend">
-              {graphData && (
+            {!sel && graphData && (
+              <div className="fgx-legend-info">
                 <span className="fgx-legend-desc">
-                  人脉度数前 {graphData.nodes.length} 人 · 全库共 {graphData.total ?? graphData.nodes.length} 人
+                  {graphData.nodes.length === 1 && graphData.links.length === 0
+                    ? "独立人物 · 暂无关系数据"
+                    : <>人脉度数前 {graphData.nodes.length} 人 · 全库共 {graphData.total ?? graphData.nodes.length} 人</>
+                  }
                 </span>
-              )}
+                <span className="fgx-legend-source">关系数据源自二十四史正传记载</span>
+              </div>
+            )}
+
+            <div className="fgx-legend">
               <span className="fgx-legend-hint">
                 点击星点居中 · 逐级缩小 · 拖拽旋转
               </span>

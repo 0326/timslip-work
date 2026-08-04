@@ -101,3 +101,21 @@
     max-width: 220px;
   }
 }
+
+/* ── 划线笔记：深朱红色实线下划线 ──
+ * 覆盖注释虚线，但注释词仍标红（gloss-term 的 color: var(--accent) 不受影响）
+ */
+.lt-highlight-mark {
+  background: none;
+  color: inherit;
+  border-bottom: 2px solid #8b1a1a;
+  padding: 0 1px;
+  border-radius: 0;
+  cursor: default;
+}
+
+/* 划线内嵌注释词时：注释虚线被实线覆盖，但注释词仍标红 */
+.lt-highlight-mark .gloss-term {
+  border-bottom: none;
+  color: var(--accent);
+}

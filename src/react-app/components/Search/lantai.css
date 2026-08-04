@@ -564,6 +564,25 @@
   flex: 0 0 auto;
 }
 
+.lt-reader-bar-book .lt-back-arrow {
+  margin-right: 0.15em;
+  font-weight: 400;
+  opacity: 0.7;
+}
+
+.lt-reader-bar-back-notes {
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  flex: 0 0 auto;
+  white-space: nowrap;
+  margin-left: var(--space-sm);
+  transition: color var(--duration-fast) var(--ease-ink);
+}
+.lt-reader-bar-back-notes:hover { color: var(--accent); }
+.lt-reader-bar-back-notes .lt-return-arrow { margin-right: 0.1em; font-weight: 400; opacity: 0.7; }
+
 .lt-reader-bar-sep { color: var(--rule); flex: 0 0 auto; }
 
 .lt-reader-bar-cur {
@@ -811,22 +830,6 @@
   padding-left: var(--space-lg);
   scroll-margin-top: 120px;
   border-radius: 3px;
-}
-
-/* 从人物事迹跳转定位时的高亮脉冲 */
-.lt-para.pulse {
-  animation: ltParaPulse 2.6s var(--ease-ink);
-}
-
-@keyframes ltParaPulse {
-  0%, 18% {
-    background: rgba(194, 58, 43, 0.12);
-    box-shadow: -8px 0 0 rgba(194, 58, 43, 0.6);
-  }
-  100% {
-    background: transparent;
-    box-shadow: -8px 0 0 rgba(194, 58, 43, 0);
-  }
 }
 
 .lt-para::before {
@@ -1134,4 +1137,276 @@
   line-height: 1.8;
   text-align: left;
   min-width: 0;
+}
+
+/* ── 划线浮动按钮 ── */
+.lt-highlight-btn {
+  position: fixed;
+  z-index: 80;
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 14px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(139, 31, 31, 0.3);
+  transition: all var(--duration-fast) var(--ease-ink);
+  white-space: nowrap;
+}
+.lt-highlight-btn:hover {
+  background: var(--accent-dark, #6b1a1a);
+  transform: translateX(-50%) translateY(-2px);
+  box-shadow: 0 6px 18px rgba(139, 31, 31, 0.4);
+}
+.lt-highlight-icon {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  background: currentColor;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='currentColor' d='M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34a.9959.9959 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='currentColor' d='M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34a.9959.9959 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+
+/* ── 划线 toast ── */
+.lt-highlight-toast {
+  position: fixed;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 90;
+  padding: 0.6rem 1.4rem;
+  background: rgba(26, 26, 26, 0.92);
+  color: var(--bg);
+  font-family: var(--font-sans);
+  font-size: 0.84rem;
+  letter-spacing: 0.06em;
+  border-radius: 2px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.24);
+}
+
+/* ── 笔记按钮角标 ── */
+.lt-notes-badge {
+  display: inline-block;
+  min-width: 16px;
+  padding: 0 5px;
+  margin-left: 4px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-align: center;
+  background: var(--accent);
+  color: #fff;
+  border-radius: 99px;
+  line-height: 16px;
+}
+
+/* ── 本篇划线数提示 ── */
+.lt-chapter-highlights-hint {
+  margin-top: var(--space-lg);
+  padding: 0.6rem var(--space-md);
+  text-align: center;
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
+  color: var(--muted);
+  border-top: 1px dashed var(--rule);
+  border-bottom: 1px dashed var(--rule);
+  letter-spacing: 0.04em;
+}
+
+/* ── 右侧笔记面板 ── */
+.lt-notes-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 55;
+  background: rgba(20, 18, 14, 0.32);
+}
+
+.lt-notes-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 360px;
+  max-width: 88%;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  padding: calc(56px + var(--space-md)) var(--space-sm) var(--space-sm);
+  background: var(--bg);
+  box-shadow: -4px 0 24px rgba(37, 32, 24, 0.2);
+  transform: translateX(0);
+  transition: transform var(--duration-normal) var(--ease-ink);
+}
+
+.lt-notes-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  padding: 0 var(--space-xs) var(--space-sm);
+  border-bottom: 1px solid var(--rule);
+}
+.lt-notes-head-left {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+.lt-notes-head-right {
+  display: flex;
+  gap: 6px;
+}
+.lt-notes-check-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  color: var(--ink-light);
+  user-select: none;
+}
+.lt-notes-check-all input {
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+.lt-notes-count {
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  color: var(--muted);
+  letter-spacing: 0.04em;
+}
+.lt-notes-action {
+  padding: 4px 12px;
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  background: transparent;
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  color: var(--ink-light);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-ink);
+  white-space: nowrap;
+}
+.lt-notes-action:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.lt-notes-action:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.lt-notes-close {
+  padding: 4px 8px;
+  border: none;
+  background: transparent;
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  color: var(--muted);
+  cursor: pointer;
+  border-radius: 3px;
+  transition: all var(--duration-fast) var(--ease-ink);
+  line-height: 1;
+}
+.lt-notes-close:hover {
+  color: var(--accent);
+  background: rgba(139, 31, 31, 0.06);
+}
+
+.lt-notes-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-xs);
+}
+.lt-notes-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-xl) var(--space-md);
+  font-family: var(--font-sans);
+  font-size: 0.84rem;
+  color: var(--muted);
+  text-align: center;
+  line-height: 2;
+  letter-spacing: 0.04em;
+}
+
+.lt-notes-item {
+  display: flex;
+  gap: var(--space-xs);
+  padding: var(--space-sm) var(--space-xs);
+  border-bottom: 1px dashed var(--rule);
+}
+.lt-notes-item-check {
+  flex: 0 0 auto;
+  padding-top: 3px;
+  cursor: pointer;
+}
+.lt-notes-item-check input {
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+.lt-notes-item-body {
+  flex: 1;
+  min-width: 0;
+  cursor: pointer;
+  border-radius: 3px;
+  padding: 2px 4px;
+  margin: -2px -4px;
+  transition: background var(--duration-fast) var(--ease-ink);
+}
+.lt-notes-item-body:hover {
+  background: rgba(139, 31, 31, 0.04);
+}
+.lt-notes-item-text {
+  font-family: var(--font-serif);
+  font-size: 0.88rem;
+  color: var(--ink);
+  line-height: 1.85;
+  letter-spacing: 0.02em;
+  margin: 0;
+  /* 多行截断最多 4 行 */
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.lt-notes-item-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  margin-top: 6px;
+  font-family: var(--font-sans);
+  font-size: 0.76rem;
+  color: var(--muted);
+  letter-spacing: 0.04em;
+}
+.lt-notes-item-del {
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.8rem;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 3px;
+  transition: all var(--duration-fast) var(--ease-ink);
+}
+.lt-notes-item-del:hover {
+  color: var(--accent);
+  background: rgba(139, 31, 31, 0.06);
+}
+
+/* ── 笔记面板移动端 ── */
+@media (max-width: 768px) {
+  .lt-notes-panel {
+    width: 88%;
+  }
 }

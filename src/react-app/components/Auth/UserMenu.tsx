@@ -1,10 +1,12 @@
 import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../store/authStore";
 import AuthModal from "./AuthModal";
 import "./auth.css";
 
 export default function UserMenu() {
 	const { user, isAuthenticated, isLoading, logout } = useAuth();
+	const navigate = useNavigate();
 	const [menuOpen, setMenuOpen] = useState(false);
 	const [authModalOpen, setAuthModalOpen] = useState(false);
 	const [authMode, setAuthMode] = useState<"login" | "register">("login");
@@ -35,6 +37,12 @@ export default function UserMenu() {
 	const handleLogout = async () => {
 		await logout();
 		setMenuOpen(false);
+	};
+
+	const goLibrary = (tab: "progress" | "notes" | "favorites") => {
+		setMenuOpen(false);
+		const qs = tab === "progress" ? "" : `?tab=${tab}`;
+		navigate(`/library${qs}`);
 	};
 
 	if (isLoading) {
@@ -73,12 +81,15 @@ export default function UserMenu() {
 							<div className="user-dropdown-username">@{user?.username}</div>
 						</div>
 						<div className="user-dropdown-divider" />
-						<button className="user-dropdown-item" onClick={() => setMenuOpen(false)}>
-							我的收藏
-						</button>
-						<button className="user-dropdown-item" onClick={() => setMenuOpen(false)}>
-							阅读进度
-						</button>
+						<button className="user-dropdown-item" onClick={() => goLibrary("progress")}>
+					阅读进度
+				</button>
+				<button className="user-dropdown-item" onClick={() => goLibrary("notes")}>
+				读书笔记
+			</button>
+				<button className="user-dropdown-item" onClick={() => goLibrary("favorites")}>
+					我的收藏
+				</button>
 						<div className="user-dropdown-divider" />
 						<button className="user-dropdown-item user-dropdown-logout" onClick={handleLogout}>
 							退出登录

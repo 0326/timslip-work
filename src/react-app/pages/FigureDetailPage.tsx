@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useParams, Link, useNavigate, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence, useSpring } from "framer-motion";
 import { getFigure, getFigureRelations, getFigures } from "../data/api";
 import { useApi } from "../hooks/useApi";
@@ -16,6 +16,7 @@ import { FigureSymbol } from "../components/Figure/FigureSymbol";
 import { Loading } from "../components/Common/Loading";
 import { WechatQrcodeModal } from "../components/Figure/WechatQrcodeModal";
 import { useAudio, useBgm } from "../store/audioStore";
+import { useFavorites } from "../hooks/useFavorites";
 import "../components/Figure/figure.css";
 import "../components/Figure/figure-game.css";
 
@@ -33,6 +34,34 @@ const STAR_LABEL: Record<number, string> = {
 
 const yearShort = (y: number | null) => (y == null ? "年份待考" : y < 0 ? `前${Math.abs(y)}` : `${y}`);
 const yearFull = (y: number | null) => (y == null ? "年份待考" : y < 0 ? `公元前 ${Math.abs(y)} 年` : `公元 ${y} 年`);
+
+// 收藏按钮（星星，作为 flex 子项与首行内容底边对齐）
+function FigureFavButton({ figureId, figureName }: { figureId: string; figureName: string }) {
+  const { isFavorite, toggleFavorite } = useFavorites();
+  const { playHoverBlip } = useAudio();
+  const active = isFavorite(figureId);
+  return (
+    <button
+      type="button"
+      className={`fg-fav-btn${active ? " is-active" : ""}`}
+      onClick={() => toggleFavorite(figureId)}
+      onMouseEnter={playHoverBlip}
+      aria-pressed={active}
+      aria-label={active ? `取消收藏 ${figureName}` : `收藏 ${figureName}`}
+      title={active ? "取消收藏" : "收藏"}
+    >
+      <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+        <path
+          d="M12 2.6l2.95 6.18 6.55.78-4.85 4.6 1.27 6.64L12 18.2l-5.92 2.6 1.27-6.64-4.85-4.6 6.55-.78z"
+          fill={active ? "currentColor" : "none"}
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinejoin="round"
+        />
+      </svg>
+    </button>
+  );
+}
 
 // 立绘：鼠标 3D 倾斜
 function Portrait({ figure, asset }: { figure: FigureDetail; asset?: FigureAsset | null }) {
@@ -191,6 +220,10 @@ function QuestDrawer({
 export default function FigureDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const fromFavorites = searchParams.get("from") === "favorites";
+  const navSort = (searchParams.get("sort") as "era" | "star") || "star";
+  const { favorites } = useFavorites();
   useBgm("/assets/audio/characters.mp3", 0.3);
   const { playHoverBlip } = useAudio();
   const { data: figure, loading, error: apiError } = useApi<FigureDetail>(
@@ -234,14 +267,28 @@ export default function FigureDetailPage() {
     return styleId ? assetBundle.assets[styleId] ?? null : null;
   }, [assetBundle]);
 
-  // 拉取人物列表用于前后切换导航（按时序排序）
+  // 拉取人物列表用于前后切换导航
+  // 收藏模式：仅使用收藏列表，按选定排序
+  // 列表模式：按来源页传递的 sort 排序（默认星级）
+  const favIdList = useMemo(() => [...favorites], [favorites]);
+
   useEffect(() => {
     let cancelled = false;
-    getFigures({ page: 1, limit: NAV_LIST_LIMIT, sort: "era" })
-      .then((res) => { if (!cancelled) setNavList(res.items); })
+    const limit = fromFavorites ? 500 : NAV_LIST_LIMIT;
+    const sort = navSort;
+    getFigures({ page: 1, limit, sort })
+      .then((res) => {
+        if (cancelled) return;
+        if (fromFavorites) {
+          const favSet = new Set(favIdList);
+          setNavList(res.items.filter((f) => favSet.has(f.id)));
+        } else {
+          setNavList(res.items);
+        }
+      })
       .catch(() => {});
     return () => { cancelled = true; };
-  }, []);
+  }, [fromFavorites, navSort, favIdList]);
 
   // 切换人物时关闭生平抽屉
   useEffect(() => { setQuestOpen(false); setQrOpen(false); setQrError(null); }, [id]);
@@ -254,12 +301,13 @@ export default function FigureDetailPage() {
   const prevFigure = navIndex > 0 ? navList[navIndex - 1] : null;
   const nextFigure = navIndex >= 0 && navIndex < navList.length - 1 ? navList[navIndex + 1] : null;
 
+  const navQuery = fromFavorites ? `?from=favorites&sort=${navSort}` : `?sort=${navSort}`;
   const goPrev = useCallback(() => {
-    if (prevFigure) navigate(`/figures/${prevFigure.id}`);
-  }, [prevFigure, navigate]);
+    if (prevFigure) navigate(`/figures/${prevFigure.id}${navQuery}`);
+  }, [prevFigure, navigate, navQuery]);
   const goNext = useCallback(() => {
-    if (nextFigure) navigate(`/figures/${nextFigure.id}`);
-  }, [nextFigure, navigate]);
+    if (nextFigure) navigate(`/figures/${nextFigure.id}${navQuery}`);
+  }, [nextFigure, navigate, navQuery]);
 
   // 键盘左右方向键切换
   useEffect(() => {
@@ -336,6 +384,19 @@ export default function FigureDetailPage() {
   const hasFullScene = highRarity && !!(defaultAsset && (pickAssetFile(defaultAsset, "portrait-full") || pickAssetFile(defaultAsset, "portrait-bust")));
   const isDegraded = !!error && !figure; // 降级模式标记
 
+  // 提取首行内容为变量，避免在 flex header 和正常流中重复编写
+  const titlesEl = titlePlates.length > 0 ? (
+    <div className="fg-titles">
+      {titlePlates.map((a) => <span key={a} className="fg-title-plate">{a}</span>)}
+    </div>
+  ) : null;
+  const badgesEl = (
+    <div className="fg-badges">
+      <span className="fg-badge is-identity">{displayFigure.identity}</span>
+      <span className="fg-badge is-dynasty">{displayFigure.dynasty}</span>
+    </div>
+  );
+
   return (
     <div className="fg fg--stage" data-identity={displayFigure.identity}>
       {(() => {
@@ -347,8 +408,8 @@ export default function FigureDetailPage() {
               ["--scene-bg" as any]: `url(${sceneBg})`,
             } as React.CSSProperties) : undefined}
           >
-            <Link to="/figures" className="fg-back">
-              <span className="fg-back-arrow" aria-hidden="true">‹</span> 返回群英谱
+            <Link to={fromFavorites ? "/library?tab=favorites" : "/figures"} className="fg-back">
+              <span className="fg-back-arrow" aria-hidden="true">‹</span> {fromFavorites ? "我的收藏" : "返回群英谱"}
             </Link>
             {isDegraded && (
               <div style={{
@@ -391,7 +452,13 @@ export default function FigureDetailPage() {
               animate={{ opacity: 1 }}
               transition={{ duration: 0.4, delay: 0.1, ease: "easeOut" }}
             >
-          {!hasFullScene && <div className="fg-eyebrow">青史人物 · {displayFigure.identity}</div>}
+          <div className="fg-panel-head">
+            {!hasFullScene && <div className="fg-eyebrow">青史人物 · {displayFigure.identity}</div>}
+            {hasFullScene && titlesEl}
+            {hasFullScene && !titlePlates.length && badgesEl}
+            <FigureFavButton figureId={displayFigure.id} figureName={displayFigure.name} />
+          </div>
+
           {!hasFullScene && <h1 className="fg-name">{displayFigure.name}</h1>}
           {!hasFullScene && displayFigure.star >= 1 && (
             <div className="fg-star" data-star={displayFigure.star} title={`综合等级 ${displayFigure.star} 星`}>
@@ -403,16 +470,8 @@ export default function FigureDetailPage() {
             </div>
           )}
 
-          {titlePlates.length > 0 && (
-            <div className="fg-titles">
-              {titlePlates.map((a) => <span key={a} className="fg-title-plate">{a}</span>)}
-            </div>
-          )}
-
-          <div className="fg-badges">
-            <span className="fg-badge is-identity">{displayFigure.identity}</span>
-            <span className="fg-badge is-dynasty">{displayFigure.dynasty}</span>
-          </div>
+          {!hasFullScene && titlesEl}
+          {(!hasFullScene || titlePlates.length > 0) && badgesEl}
 
           {displayFigure.bio_summary && <p className="fg-bio-dark">{displayFigure.bio_summary}</p>}
 
@@ -486,14 +545,18 @@ export default function FigureDetailPage() {
               生平历程
               {hasQuests && <span className="fg-act-count">{displayFigure.passages.length}</span>}
             </button>
-            {relations.length > 0 && (
-              <Link className="fg-act is-ghost" to={`/figures?view=graph&focus=${displayFigure.id}`}>
-                <span className="fg-act-icon" aria-hidden="true">联</span>
-                人物关系
-                <span className="fg-act-count">{relations.length}</span>
-              </Link>
-            )}
+            <Link
+              className={`fg-act is-ghost${relations.length === 0 ? " is-empty" : ""}`}
+              to={relations.length > 0
+                ? `/figures?view=graph&focus=${displayFigure.id}&depth=2`
+                : `/figures?view=graph&focus=${displayFigure.id}`}
+            >
+              <span className="fg-act-icon" aria-hidden="true">联</span>
+              人物关系
+              <span className="fg-act-count">{relations.length}</span>
+            </Link>
           </div>
+          <p className="fg-rel-note">人物关系数据均出自二十四史正传记载</p>
         </motion.div>
 
             {/* 左右切换按钮 */}
