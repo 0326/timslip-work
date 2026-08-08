@@ -570,18 +570,29 @@
   opacity: 0.7;
 }
 
-.lt-reader-bar-back-notes {
+.lt-reader-back-fab {
+  position: fixed;
+  top: calc(102px + var(--space-sm));
+  right: var(--space-lg);
+  z-index: 40;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+  padding: 0.42rem 0.85rem;
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  background: rgba(245, 240, 232, 0.9);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 2px 10px rgba(37, 32, 24, 0.08);
   font-family: var(--font-sans);
   font-size: 0.78rem;
   letter-spacing: 0.04em;
   color: var(--muted);
-  flex: 0 0 auto;
   white-space: nowrap;
-  margin-left: var(--space-sm);
-  transition: color var(--duration-fast) var(--ease-ink);
+  transition: color var(--duration-fast) var(--ease-ink), border-color var(--duration-fast) var(--ease-ink);
 }
-.lt-reader-bar-back-notes:hover { color: var(--accent); }
-.lt-reader-bar-back-notes .lt-return-arrow { margin-right: 0.1em; font-weight: 400; opacity: 0.7; }
+.lt-reader-back-fab:hover { color: var(--accent); border-color: var(--accent); }
+.lt-reader-back-fab .lt-return-arrow { margin-right: 0.1em; font-weight: 400; opacity: 0.7; }
 
 .lt-reader-bar-sep { color: var(--rule); flex: 0 0 auto; }
 
@@ -830,6 +841,24 @@
   padding-left: var(--space-lg);
   scroll-margin-top: 120px;
   border-radius: 3px;
+}
+
+/* 从人物生平跳转定位的目标段落：低饱和度背景持久标记，落定时短暂脉冲提醒 */
+.lt-para.is-target {
+  background: rgba(194, 58, 43, 0.07);
+  box-shadow: -8px 0 0 rgba(194, 58, 43, 0.28);
+  animation: ltParaTargetSettle 2.6s var(--ease-ink);
+}
+
+@keyframes ltParaTargetSettle {
+  0%, 18% {
+    background: rgba(194, 58, 43, 0.14);
+    box-shadow: -8px 0 0 rgba(194, 58, 43, 0.6);
+  }
+  100% {
+    background: rgba(194, 58, 43, 0.07);
+    box-shadow: -8px 0 0 rgba(194, 58, 43, 0.28);
+  }
 }
 
 .lt-para::before {

@@ -31,7 +31,7 @@ const inflight = new Map<string, Promise<unknown>>();
 
 // === localStorage 持久化（跨会话缓存静态数据）===
 const LS_PREFIX = "api-cache:";
-const LS_VERSION = "v9";
+const LS_VERSION = "v10";
 
 function lsRead<T>(url: string): T | undefined {
   try {
