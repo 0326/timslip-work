@@ -33,6 +33,8 @@ export default function ReaderPage() {
   const targetPid = searchParams.get("p");
   const fromNotes = searchParams.get("from") === "notes";
   const fromProgress = searchParams.get("from") === "progress";
+  /** 来源标记：人物生平跳转不带 from，其余带入栈路径（笔记/进度）均带标记 */
+  const fromMarker = searchParams.get("from");
   const { isAuthenticated } = useAuth();
 
   const { data, loading, error, refetch } = useApi<ChapterDetail>(
@@ -457,18 +459,6 @@ export default function ReaderPage() {
         </div>
       </div>
 
-      {/* 返回来源页：仅从读书笔记/阅读进度页进入时显示，浮于右侧滚轴上方 */}
-      {fromNotes && (
-        <Link to="/library?tab=notes" className="lt-reader-back-fab">
-          <span className="lt-return-arrow">↩</span>返回读书笔记
-        </Link>
-      )}
-      {fromProgress && (
-        <Link to="/library?tab=progress" className="lt-reader-back-fab">
-          <span className="lt-return-arrow">↩</span>返回阅读进度
-        </Link>
-      )}
-
       {/* 浮动划线按钮 */}
       {selectionBox.visible && (
         <button
@@ -497,6 +487,17 @@ export default function ReaderPage() {
             <span className="lt-side-head-sub">
               {catalog ? `${catalog.chapters.length} 篇` : ""}
             </span>
+            {/* 返回来源页：仅从读书笔记/阅读进度页进入时显示，位于目录滚动条上方 */}
+            {fromNotes && (
+              <Link to="/library?tab=notes" className="lt-reader-back-fab">
+                <span className="lt-return-arrow">↩</span>返回读书笔记
+              </Link>
+            )}
+            {fromProgress && (
+              <Link to="/library?tab=progress" className="lt-reader-back-fab">
+                <span className="lt-return-arrow">↩</span>返回阅读进度
+              </Link>
+            )}
           </div>
           <nav className="lt-side-list">
             {catalog?.chapters.map((c) => {
@@ -546,7 +547,7 @@ export default function ReaderPage() {
             <div className="lt-passages">
               {ch.passages.map((p) => (
                 <div
-                  className={`lt-para${targetPid === p.id && !fromNotes ? " is-target" : ""}`}
+                  className={`lt-para${targetPid === p.id && !fromMarker ? " is-target" : ""}`}
                   id={p.id}
                   key={p.id}
                 >
