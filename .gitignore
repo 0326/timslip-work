@@ -14,7 +14,7 @@ public/assets/figures/*# Created by git when using merge tools for conflicts
 *_BASE_*.txt
 *_LOCAL_*.txt
 *_REMOTE_*.txt
-src/**/*.js
+
 ### macOS ###
 # General
 .DS_Store
