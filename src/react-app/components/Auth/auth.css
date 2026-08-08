@@ -311,13 +311,23 @@
 
 /* ── 底部切换 ── */
 .auth-footer {
-	text-align: center;
 	margin-top: 4px;
+	display: flex;
+	justify-content: center;
 }
 
 .auth-switch {
+	display: inline-flex;
+	align-items: center;
+	gap: 2px;
+	flex-wrap: nowrap;
+	white-space: nowrap;
 	font-size: 0.8rem;
 	color: var(--muted);
+}
+
+.auth-switch-text {
+	white-space: nowrap;
 }
 
 .auth-switch button {
@@ -332,10 +342,21 @@
 	transition: color 0.15s;
 	text-decoration: underline;
 	text-underline-offset: 2px;
+	white-space: nowrap;
 }
 
 .auth-switch button:hover {
 	color: var(--accent-light);
+}
+
+.auth-switch button:disabled {
+	opacity: 0.6;
+	cursor: not-allowed;
+}
+
+.auth-divider {
+	color: var(--rule);
+	margin: 0 6px;
 }
 
 /* ── 响应式 ── */

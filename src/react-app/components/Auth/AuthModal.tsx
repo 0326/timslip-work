@@ -122,6 +122,18 @@ export default function AuthModal({ open, onClose, initialMode = "login" }: Auth
 		setShowPwd(false);
 	};
 
+	const handleTestLogin = async () => {
+		setError("");
+		setLoading(true);
+		const result = await login("chuanyuezhe", "chuanyuezhe");
+		setLoading(false);
+		if (result.success) {
+			onClose();
+		} else {
+			setError(result.message || "测试账号登录失败");
+		}
+	};
+
 	if (!open) return null;
 
 	return createPortal(
@@ -242,17 +254,23 @@ export default function AuthModal({ open, onClose, initialMode = "login" }: Auth
 					</button>
 
 					<div className="auth-footer">
-						{mode === "login" ? (
-							<span className="auth-switch">
-								还没有账号？
-								<button type="button" onClick={() => switchMode("register")}>立即注册</button>
-							</span>
-						) : (
-							<span className="auth-switch">
-								已有账号？
-								<button type="button" onClick={() => switchMode("login")}>去登录</button>
-							</span>
-						)}
+						<div className="auth-switch">
+							{mode === "login" ? (
+								<>
+									<span className="auth-switch-text">还没有账号？</span>
+									<button type="button" onClick={() => switchMode("register")}>立即注册</button>
+								</>
+							) : (
+								<>
+									<span className="auth-switch-text">已有账号？</span>
+									<button type="button" onClick={() => switchMode("login")}>去登录</button>
+								</>
+							)}
+							<span className="auth-divider">·</span>
+							<button type="button" onClick={handleTestLogin} disabled={loading}>
+								{loading ? "登录中..." : "使用测试账号快速体验"}
+							</button>
+						</div>
 					</div>
 				</form>
 			</div>
