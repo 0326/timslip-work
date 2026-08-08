@@ -66,7 +66,7 @@
   letter-spacing: 0.05em;
 }
 .fg-card-gender {
-  position: absolute; top: 8px; right: 8px;
+  position: absolute; top: 35px; left: 8px;
   width: 20px; height: 20px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
   font-size: 13px; font-weight: 700; line-height: 1;
@@ -75,6 +75,19 @@
 }
 .fg-card-gender.male {
   background: rgba(127, 176, 216, 0.85); color: #1a3a5c;
+}
+/* 已收藏标识：右上角钝角长方形边框，低饱和度灰白 */
+.fg-card-fav {
+  position: absolute; top: 8px; right: 8px;
+  font-size: 10px; font-family: var(--font-sans);
+  padding: 2px 7px; border-radius: 5px;
+  color: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  background: rgba(0, 0, 0, 0.32);
+  backdrop-filter: blur(4px);
+  letter-spacing: 0.06em;
+  line-height: 1.4;
+  white-space: nowrap;
 }
 /* 星级：art 左下角，金色，星数越高越亮 */
 .fg-card-star {
@@ -656,6 +669,65 @@
   border-radius: 999px;
 }
 
+/* ============ 面板头部行：首行内容 + 收藏按钮，flex 底边对齐 ============ */
+.fg-panel-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+}
+/* 头部内子元素重置 margin，避免干扰 flex 对齐 */
+.fg-panel-head .fg-eyebrow { margin-bottom: 0; }
+.fg-panel-head .fg-titles,
+.fg-panel-head .fg-badges { margin-top: 0; }
+/* 全屏立绘模式：头部行需要与原 fg-titles 的 margin-top 一致 */
+.fg-stage.has-fullscene .fg-panel-head { margin-top: 16px; }
+/* 非全屏模式：eyebrow 与下方 name 之间保留原间距 */
+.fg-stage:not(.has-fullscene) .fg-panel-head { margin-bottom: 10px; }
+
+/* ============ 收藏按钮（钝角方形边框 + 星星） ============ */
+.fg-fav-btn {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid rgba(240, 233, 221, 0.28);
+  border-radius: 9px;
+  background: rgba(0, 0, 0, 0.22);
+  cursor: pointer;
+  color: rgba(240, 233, 221, 0.42);
+  transition: color 0.22s ease, border-color 0.22s ease, background 0.22s ease, transform 0.18s ease;
+}
+.fg-fav-btn:hover {
+  color: rgba(240, 233, 221, 0.9);
+  border-color: rgba(240, 233, 221, 0.48);
+  background: rgba(255, 255, 255, 0.06);
+}
+/* 收藏激活：仅星星点亮，边框保持不变 */
+.fg-fav-btn.is-active {
+  color: #f5c451;
+  animation: fg-fav-pop 0.42s ease;
+}
+.fg-fav-btn.is-active:hover {
+  color: #ffd877;
+  background: rgba(245, 196, 81, 0.08);
+}
+.fg-fav-btn:active {
+  transform: scale(0.88);
+}
+.fg-fav-btn:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--idc) 70%, transparent);
+  outline-offset: 2px;
+}
+@keyframes fg-fav-pop {
+  0% { transform: scale(1); }
+  45% { transform: scale(1.3); }
+  100% { transform: scale(1); }
+}
+
 .fg-bio-dark {
   font-family: var(--font-serif);
   font-size: 15px;
@@ -792,6 +864,21 @@
 }
 .fg-act.is-ghost .fg-act-count {
   background: color-mix(in srgb, var(--idc) 70%, #000);
+}
+.fg-act.is-empty {
+  opacity: 0.6;
+}
+.fg-act.is-empty .fg-act-count {
+  background: rgba(120, 120, 120, 0.3);
+}
+.fg-rel-note {
+  margin: 8px 0 0;
+  font-size: 11px;
+  font-family: var(--font-sans);
+  color: rgba(236, 226, 208, 0.35);
+  letter-spacing: 0.04em;
+  line-height: 1.4;
+  text-align: right;
 }
 
 /* 添加微信按钮（微信绿） */
@@ -1673,6 +1760,10 @@
     overflow-y: visible;
     align-self: auto;
     flex: 0 0 auto;
+  }
+  .fg-stage.has-fullscene .fg-fav-btn {
+    top: 22px;
+    right: 14px;
   }
   .fg-stage.has-fullscene .fg-back {
     top: 14px;

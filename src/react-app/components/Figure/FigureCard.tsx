@@ -9,6 +9,7 @@ import {
 } from "../../data/figure-assets";
 import { FigureSymbol } from "./FigureSymbol";
 import { useAudio } from "../../store/audioStore";
+import { useFavorites } from "../../hooks/useFavorites";
 import "./figure-game.css";
 
 const item: Variants = {
@@ -20,12 +21,15 @@ export interface FigureCardProps {
   figure: Figure;
   /** 可选：外部传入头像 URL（覆盖静态/默认） */
   assetAvatarUrl?: string | null;
+  /** 可选：点击卡片跳转时附加的 URL 查询参数（如 ?from=favorites&sort=era） */
+  navQuery?: string;
 }
 
-export function FigureCard({ figure, assetAvatarUrl }: FigureCardProps) {
+export function FigureCard({ figure, assetAvatarUrl, navQuery }: FigureCardProps) {
   const navigate = useNavigate();
   const { playHoverBlip } = useAudio();
-  const go = () => navigate(`/figures/${figure.id}`);
+  const { isFavorite } = useFavorites();
+  const go = () => navigate(`/figures/${figure.id}${navQuery ? `?${navQuery}` : ""}`);
 
   // 本地静态兜底头像（仅内置若干人物，纯同步、无网络）；R2 资产由列表接口的 figure.avatar 直接给出，
   // 卡片不再逐个拉 /api/figures/:id/assets（消除 N+1）。
@@ -76,6 +80,7 @@ export function FigureCard({ figure, assetAvatarUrl }: FigureCardProps) {
         {figure.dynasty && <span className="fg-card-badge">{figure.dynasty}</span>}
         {figure.gender === "female" && <span className="fg-card-gender" title="女">♀</span>}
         {figure.gender === "male" && <span className="fg-card-gender male" title="男">♂</span>}
+        {isFavorite(figure.id) && <span className="fg-card-fav">已收藏</span>}
       </div>
       <div className="fg-card-body">
         <div className="fg-card-name-row">

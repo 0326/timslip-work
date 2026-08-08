@@ -18,6 +18,7 @@ const FigurePage = lazy(() => import("./pages/FigurePage"));
 const FigureDetailPage = lazy(() => import("./pages/FigureDetailPage"));
 const BookPage = lazy(() => import("./pages/BookPage"));
 const ReaderPage = lazy(() => import("./pages/ReaderPage"));
+const MyLibraryPage = lazy(() => import("./pages/MyLibraryPage"));
 
 /** 兼容旧链接 /figures/graph?focus=id → 新的集成星图模式，保留 focus */
 function GraphRedirect() {
@@ -47,6 +48,7 @@ function AnimatedRoutes() {
           <Route path="/search" element={<SearchPage />} />
           <Route path="/books/:id" element={<BookPage />} />
           <Route path="/read/*" element={<ReaderPage />} />
+          <Route path="/library" element={<MyLibraryPage />} />
           <Route path="/text/*" element={<TextPage />} />
           <Route path="/hub" element={<HubPage />} />
           <Route path="/figures" element={<FigurePage />} />

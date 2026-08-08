@@ -31,7 +31,7 @@ const inflight = new Map<string, Promise<unknown>>();
 
 // === localStorage 持久化（跨会话缓存静态数据）===
 const LS_PREFIX = "api-cache:";
-const LS_VERSION = "v9";
+const LS_VERSION = "v10";
 
 function lsRead<T>(url: string): T | undefined {
   try {
@@ -207,9 +207,22 @@ export function getFigureAssets(id: string): Promise<FigureAssetsResponse> {
   return request<FigureAssetsResponse>(`${BASE}/figures/${id}/assets`, TTL_SEMI);
 }
 
-/** 关系图数据：节点+边，半静态缓存（30min） */
-export function getFigureGraph(top: number = 2000): Promise<GraphData> {
-  return request<GraphData>(`${BASE}/figures/graph?top=${top}`, TTL_SEMI);
+/** 关系图数据：节点+边，半静态缓存（30min）
+ *  focus + depth：返回该节点的 N 跳自我子图（≤300 节点，秒开）
+ *  仅 focus（无 depth）：全量 top-N 图，但确保 focus 节点包含在内
+ */
+export function getFigureGraph(
+  top: number = 2000,
+  focus?: string,
+  depth?: number,
+): Promise<GraphData> {
+  const params = new URLSearchParams();
+  params.set("top", String(top));
+  if (focus) {
+    params.set("focus", focus);
+    if (depth) params.set("depth", String(depth));
+  }
+  return request<GraphData>(`${BASE}/figures/graph?${params.toString()}`, TTL_SEMI);
 }
 
 export function getFigureAssetStyle(

@@ -210,19 +210,23 @@ export default function AtlasPage() {
           const pos = project(f.at);
           if (!pos) return null;
           const enrich = enrichByName.get(f.name);
-          const fid = enrich?.figureId;
+          const fid = enrich?.figureId ?? f.figureId;
+          const linked = !!fid;
+          // 仅在富化详情加载完成后才禁用无匹配人物；加载中保持中性态避免闪烁
+          const disabled = !!detail && !linked;
           return (
             <button
               key={`f-${f.name}`}
               type="button"
-              className="atlas-figure"
+              className={`atlas-figure${disabled ? " is-disabled" : ""}`}
               style={{ left: pos.x, top: pos.y }}
-              title={`${f.name} · ${f.place} — ${f.note}`}
-              onClick={() =>
-                navigate(
-                  fid ? `/figures/${fid}` : `/figures?q=${encodeURIComponent(f.name)}`
-                )
+              title={
+                linked
+                  ? `${f.name} · ${f.place} — ${f.note}`
+                  : `${f.name} · ${f.place} — 暂无人物档案`
               }
+              disabled={disabled}
+              onClick={linked ? () => navigate(`/figures/${fid}`) : undefined}
             >
               <i>{f.name.charAt(0)}</i>
               <span>
@@ -234,7 +238,7 @@ export default function AtlasPage() {
         })}
       </div>
     );
-  }, [frame, snapshot, navigate, enrichByName]);
+  }, [frame, snapshot, navigate, enrichByName, detail]);
 
   if (error) {
     return (
