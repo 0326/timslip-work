@@ -1648,7 +1648,7 @@ const ATLAS_ATTRIBUTION =
   "疆域为示意改绘，据 historical-basemaps (GPL-3.0) / CHGIS 参考重制，界线不作依据";
 
 // KV 缓存版本：改动种子数据或响应结构后 +1，线上即自然失效旧缓存（无需手动清 KV）
-const ATLAS_CACHE_VER = "v3";
+const ATLAS_CACHE_VER = "v4";
 
 function rowToSnapshotMeta(r: Record<string, unknown>): AtlasSnapshotMeta {
   return {
@@ -1697,12 +1697,20 @@ app.get("/api/atlas/snapshots/:slug", async (c) => {
   }
   const meta = rowToSnapshotMeta(metaRow);
 
+  // figure_id 缺省时按同名人物兜底（选星级最高、最相关者），避免新增 marker 漏关联导致深链失效
   const markerRs = await db
     .prepare(
       `SELECT m.kind, m.name, m.lng, m.lat, m.regime, m.figure_id, m.place_name, m.note, m.sort_order,
+              COALESCE(m.figure_id, (
+                SELECT fx.id FROM figures fx WHERE fx.name = m.name
+                ORDER BY fx.star DESC, fx.id LIMIT 1
+              )) AS eff_figure_id,
               f.identity, f.avatar_icon, f.birth_year, f.death_year
        FROM atlas_markers m
-       LEFT JOIN figures f ON f.id = m.figure_id
+       LEFT JOIN figures f ON f.id = COALESCE(m.figure_id, (
+                SELECT fx.id FROM figures fx WHERE fx.name = m.name
+                ORDER BY fx.star DESC, fx.id LIMIT 1
+              ))
        WHERE m.snapshot_id = ?
        ORDER BY m.kind, m.sort_order`,
     )
@@ -1726,7 +1734,7 @@ app.get("/api/atlas/snapshots/:slug", async (c) => {
         lat: Number(r.lat),
         place_name: (r.place_name as string) || null,
         note: (r.note as string) || null,
-        figure_id: (r.figure_id as string) || null,
+        figure_id: (r.eff_figure_id as string) || null,
         identity: (r.identity as string) || null,
         avatar_icon: (r.avatar_icon as string) || null,
         birth_year: (r.birth_year as number) ?? null,

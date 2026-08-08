@@ -47,6 +47,24 @@
   max-width: 420px;
   min-width: 0;
 }
+/* 返回人物详情：位于搜索框下方，样式与「群英谱」返回键一致 */
+.fgx-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  font-size: 13px;
+  font-family: var(--font-sans);
+  color: #d8ccab;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 999px;
+  padding: 5px 14px;
+  text-decoration: none;
+  transition: all var(--duration-fast);
+}
+.fgx-back:hover { background: rgba(255, 255, 255, 0.16); color: #fff; }
+.fgx-back i { font-size: 13px; }
 .fgx-topbar-right {
   display: flex;
   align-items: center;

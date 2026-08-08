@@ -570,18 +570,29 @@
   opacity: 0.7;
 }
 
-.lt-reader-bar-back-notes {
+/* 返回读书笔记/阅读进度：位于工具栏内，垂直居中与白话/笔记对齐，右边缘对齐左侧目录滚动条 */
+.lt-reader-back-fab {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  right: calc(50% + 324px);
+  z-index: 10;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  padding: 0.3rem 0.65rem;
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  background: transparent;
   font-family: var(--font-sans);
-  font-size: 0.78rem;
+  font-size: 0.76rem;
   letter-spacing: 0.04em;
   color: var(--muted);
-  flex: 0 0 auto;
   white-space: nowrap;
-  margin-left: var(--space-sm);
-  transition: color var(--duration-fast) var(--ease-ink);
+  transition: color var(--duration-fast) var(--ease-ink), border-color var(--duration-fast) var(--ease-ink);
 }
-.lt-reader-bar-back-notes:hover { color: var(--accent); }
-.lt-reader-bar-back-notes .lt-return-arrow { margin-right: 0.1em; font-weight: 400; opacity: 0.7; }
+.lt-reader-back-fab:hover { color: var(--accent); border-color: var(--accent); }
+.lt-reader-back-fab .lt-return-arrow { margin-right: 0.1em; font-weight: 400; opacity: 0.7; }
 
 .lt-reader-bar-sep { color: var(--rule); flex: 0 0 auto; }
 
@@ -832,6 +843,24 @@
   border-radius: 3px;
 }
 
+/* 从人物生平跳转定位的目标段落：低饱和度背景持久标记，落定时短暂脉冲提醒 */
+.lt-para.is-target {
+  background: rgba(194, 58, 43, 0.07);
+  box-shadow: -8px 0 0 rgba(194, 58, 43, 0.28);
+  animation: ltParaTargetSettle 2.6s var(--ease-ink);
+}
+
+@keyframes ltParaTargetSettle {
+  0%, 18% {
+    background: rgba(194, 58, 43, 0.14);
+    box-shadow: -8px 0 0 rgba(194, 58, 43, 0.6);
+  }
+  100% {
+    background: rgba(194, 58, 43, 0.07);
+    box-shadow: -8px 0 0 rgba(194, 58, 43, 0.28);
+  }
+}
+
 .lt-para::before {
   counter-increment: para;
   content: counter(para);
@@ -960,6 +989,13 @@
 }
 
 /* ── 响应式 ── */
+/* 中间宽度（961–1160px）：二栏布局铺满视口，目录滚动条右边缘整体左移，重新对齐 */
+@media (min-width: 961px) and (max-width: 1160px) {
+  .lt-reader-back-fab {
+    right: calc(100% - 256px);
+  }
+}
+
 @media (max-width: 960px) {
   /* 书籍页：左信息栏化为顶部块，类目导航转横排 */
   .lt-book-layout {
@@ -1009,6 +1045,11 @@
     transition: transform var(--duration-normal) var(--ease-ink);
   }
   .lt-reader-side.open { transform: translateX(0); }
+  /* 移动端：目录为抽屉，返回按钮改在工具栏右侧兜底显示 */
+  .lt-reader-back-fab {
+    right: var(--space-md);
+    left: auto;
+  }
   .lt-reader-backdrop {
     display: block;
     position: fixed;

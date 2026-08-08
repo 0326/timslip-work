@@ -144,7 +144,7 @@ function QuestDrawer({
 
   const readerHref = (p: FigurePassage) =>
     p.chapter_id
-      ? `/read/${p.chapter_id}${p.passage_id ? `?p=${encodeURIComponent(p.passage_id)}` : ""}`
+      ? `/read/${p.chapter_id}${p.passage_id ? `?p=${encodeURIComponent(p.passage_id)}&from=figure&figure=${encodeURIComponent(figure.id)}` : ""}`
       : null;
 
   return (

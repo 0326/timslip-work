@@ -32,6 +32,11 @@ export default function ReaderPage() {
   const id = params["*"] || "";
   const targetPid = searchParams.get("p");
   const fromNotes = searchParams.get("from") === "notes";
+  const fromProgress = searchParams.get("from") === "progress";
+  /** 来源标记：仅人物生平跳转携带 from=figure，其余入栈路径（笔记/进度/兰台）均不触发背景高亮 */
+  const fromFigure = searchParams.get("from") === "figure";
+  /** 人物生平跳转携带的人物 id（仅 from=figure 时有值），用于返回人物生平 */
+  const figureId = fromFigure ? searchParams.get("figure") : null;
   const { isAuthenticated } = useAuth();
 
   const { data, loading, error, refetch } = useApi<ChapterDetail>(
@@ -370,11 +375,13 @@ export default function ReaderPage() {
     });
   }, [data, removeHighlight]);
 
-  /** 点击笔记条目：跳转到文中对应段落（支持跨卷跳转） */
+  /** 点击笔记条目：跳转到文中对应段落（支持跨卷跳转）
+   *  仅当当前就是从读书笔记/阅读进度页进入时，跨卷跳转才保留来源标记；
+   *  在兰台模块内阅读时点击笔记，跳转不显示返回按钮 */
   const handleNoteJump = useCallback((chapterId: string, passageId: string) => {
     if (chapterId !== id) {
-      // 跨卷：导航到对应篇章，带锚点与 from=notes 标记
-      navigate(`/read/${chapterId}?p=${passageId}&from=notes`);
+      const from = fromNotes ? "notes" : fromProgress ? "progress" : null;
+      navigate(`/read/${chapterId}?p=${passageId}${from ? `&from=${from}` : ""}`);
     } else {
       // 同卷：平滑滚动到对应段落
       const el = document.getElementById(passageId);
@@ -382,7 +389,7 @@ export default function ReaderPage() {
         el.scrollIntoView({ behavior: "smooth", block: "center" });
       }
     }
-  }, [id, navigate]);
+  }, [id, navigate, fromNotes, fromProgress]);
 
   if (loading) return <Loading />;
 
@@ -410,6 +417,22 @@ export default function ReaderPage() {
 
       {/* 常驻工具条：滚动时始终可达 */}
       <div className="lt-reader-bar">
+        {/* 返回来源页：仅从读书笔记/阅读进度页进入时显示，垂直居中与白话/笔记对齐，右边缘对齐目录滚动条 */}
+        {fromNotes && (
+          <Link to="/library?tab=notes" className="lt-reader-back-fab">
+            <span className="lt-return-arrow">↩</span>返回读书笔记
+          </Link>
+        )}
+        {fromProgress && (
+          <Link to="/library?tab=progress" className="lt-reader-back-fab">
+            <span className="lt-return-arrow">↩</span>返回阅读进度
+          </Link>
+        )}
+        {fromFigure && figureId && (
+          <Link to={`/figures/${figureId}`} className="lt-reader-back-fab">
+            <span className="lt-return-arrow">↩</span>返回人物生平
+          </Link>
+        )}
         <div className="lt-reader-bar-left">
           <button
             className="lt-reader-bar-menu"
@@ -423,11 +446,6 @@ export default function ReaderPage() {
           </Link>
           <span className="lt-reader-bar-sep">·</span>
           <span className="lt-reader-bar-cur">{ch.name}</span>
-          {fromNotes && (
-            <Link to="/library?tab=notes" className="lt-reader-bar-back-notes">
-              <span className="lt-return-arrow">↩</span>返回读书笔记
-            </Link>
-          )}
         </div>
         <div className="lt-reader-bar-right">
           {hasVernacular && (
@@ -536,7 +554,7 @@ export default function ReaderPage() {
             <div className="lt-passages">
               {ch.passages.map((p) => (
                 <div
-                  className="lt-para"
+                  className={`lt-para${targetPid === p.id && fromFigure ? " is-target" : ""}`}
                   id={p.id}
                   key={p.id}
                 >

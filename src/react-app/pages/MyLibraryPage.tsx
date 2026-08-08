@@ -36,11 +36,11 @@ export default function MyLibraryPage() {
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const { favorites } = useFavorites();
 
-  const [activeTab, setActiveTab] = useState<TabName>(
+  // 当前标签以 URL 为唯一数据源，保证页面内标签与头像下拉菜单切换一致
+  const activeTab: TabName =
     searchParams.get("tab") === "favorites" ? "favorites"
       : searchParams.get("tab") === "notes" ? "notes"
-      : "progress",
-  );
+      : "progress";
 
   // 阅读进度/笔记标签 → 兰台 BGM；我的收藏标签 → 人物 BGM
   const bgmUrl = activeTab === "favorites"
@@ -191,7 +191,7 @@ export default function MyLibraryPage() {
   /** 点击书封跳转阅读 */
   const handleOpenBook = useCallback(
     (entry: ReadingProgressEntry) => {
-      navigate(`/read/${entry.chapterId}`);
+      navigate(`/read/${entry.chapterId}?from=progress`);
     },
     [navigate],
   );
@@ -247,7 +247,7 @@ export default function MyLibraryPage() {
           <button
             className={`ml-tab${activeTab === "progress" ? " active" : ""}`}
             data-tab="progress"
-            onClick={() => setActiveTab("progress")}
+            onClick={() => navigate("/library")}
             onMouseEnter={playHoverBlip}
           >
             阅读进度
@@ -256,7 +256,7 @@ export default function MyLibraryPage() {
           <button
             className={`ml-tab${activeTab === "notes" ? " active" : ""}`}
             data-tab="notes"
-            onClick={() => setActiveTab("notes")}
+            onClick={() => navigate("/library?tab=notes")}
             onMouseEnter={playHoverBlip}
           >
             读书笔记
@@ -265,7 +265,7 @@ export default function MyLibraryPage() {
           <button
             className={`ml-tab${activeTab === "favorites" ? " active" : ""}`}
             data-tab="favorites"
-            onClick={() => setActiveTab("favorites")}
+            onClick={() => navigate("/library?tab=favorites")}
             onMouseEnter={playHoverBlip}
           >
             我的收藏

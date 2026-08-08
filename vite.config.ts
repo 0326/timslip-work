@@ -40,5 +40,5 @@ function spaFallback(): Plugin {
 }
 
 export default defineConfig({
-    plugins: [react(), spaFallback(), cloudflare({ remoteBindings: true })],
+    plugins: [react(), spaFallback(), cloudflare({ remoteBindings: false })],
 });

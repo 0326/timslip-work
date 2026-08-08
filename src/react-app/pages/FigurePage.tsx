@@ -789,6 +789,8 @@ export default function FigurePage() {
   const isList = mode === "list";
   const isGraph = mode === "graph";
   const items = listItems;
+  // 从人物详情进入星图时带 focus，用作用户最初查看的人物，点击「返回人物详情」回到该人物
+  const urlFocus = searchParams.get("focus");
 
   const currentDynastyLabel =
     listMeta.filters.dynasties.find((d) => d.value === dynasty)?.value || "全部朝代";
@@ -1033,6 +1035,15 @@ export default function FigurePage() {
                     </div>
                   )}
                 </div>
+                {urlFocus && (
+                  <Link
+                    to={`/figures/${urlFocus}`}
+                    className="fgx-back"
+                    onMouseEnter={playHoverBlip}
+                  >
+                    <i className="ti ti-arrow-left" aria-hidden="true" /> 返回人物详情
+                  </Link>
+                )}
               </div>
               <div className="fgx-topbar-right">
                 <div className="figure-mode-switch is-dark">
