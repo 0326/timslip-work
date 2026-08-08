@@ -41,4 +41,32 @@ function spaFallback(): Plugin {
 
 export default defineConfig({
     plugins: [react(), spaFallback(), cloudflare({ remoteBindings: true })],
+    build: {
+        rollupOptions: {
+            output: {
+                manualChunks(id) {
+                    // React 核心包
+                    if (id.includes('node_modules/react') || id.includes('node_modules/react-dom') || id.includes('node_modules/react-router')) {
+                        return 'vendor-react';
+                    }
+                    // 地图库（仅舆图页面使用）
+                    if (id.includes('node_modules/maplibre-gl')) {
+                        return 'vendor-maplibre';
+                    }
+                    // 3D 图谱库（仅人物关系图谱使用）
+                    if (id.includes('node_modules/three') || id.includes('node_modules/3d-force-graph') || id.includes('node_modules/d3-force')) {
+                        return 'vendor-three';
+                    }
+                    // 动效库（全站使用但体量大）
+                    if (id.includes('node_modules/framer-motion')) {
+                        return 'vendor-framer';
+                    }
+                    // 其他 node_modules 依赖统一打包
+                    if (id.includes('node_modules')) {
+                        return 'vendor-other';
+                    }
+                },
+            },
+        },
+    },
 });

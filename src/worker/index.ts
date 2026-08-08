@@ -70,6 +70,30 @@ app.use("/api/*", cors({
   credentials: true,
 }));
 
+// 安全响应头：覆盖 OWASP 推荐的安全头，防止 XSS/点击劫持/MIME 嗅探等攻击
+app.use("/api/*", async (c, next) => {
+  await next();
+  c.header("X-Frame-Options", "DENY");
+  c.header("X-Content-Type-Options", "nosniff");
+  c.header("Referrer-Policy", "strict-origin-when-cross-origin");
+  c.header("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
+  // HSTS：生产环境才启用，避免本地开发时被浏览器锁定为 HTTPS
+  const host = c.req.header("host") || "";
+  if (!host.startsWith("localhost") && !host.startsWith("127.0.0.1")) {
+    c.header("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
+  }
+  // CSP：基于当前站点白名单，只允许同源脚本和样式
+  c.header("Content-Security-Policy",
+    "default-src 'self'; " +
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval'; " +
+    "style-src 'self' 'unsafe-inline'; " +
+    "img-src 'self' data: https:; " +
+    "font-src 'self' data:; " +
+    "connect-src 'self' https://*.timeslip.work https://*.workers.dev; " +
+    "frame-ancestors 'none'"
+  );
+});
+
 // 全局限流：100 req/min per IP（仅当 RATE_LIMITER 绑定存在时启用；
 // 本地/未配置绑定时优雅跳过，避免 c.env.RATE_LIMITER 为 undefined 导致 500）
 app.use("/api/*", async (c, next) => {

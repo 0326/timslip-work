@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect } from "react";
+import { lazy, Suspense } from "react";
 import { BrowserRouter, Routes, Route, Navigate, useLocation, useSearchParams } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { Loading } from "./components/Common/Loading";
@@ -6,8 +6,8 @@ import { ErrorBoundary } from "./components/Common/ErrorBoundary";
 import { Header } from "./components/Common/Header";
 import { AuthProvider } from "./store/authStore";
 import { AudioProvider } from "./store/audioStore";
-import Home from "./pages/Home";
 
+const Home = lazy(() => import("./pages/Home"));
 const SearchPage = lazy(() => import("./pages/SearchPage"));
 const TextPage = lazy(() => import("./pages/TextPage"));
 const HubPage = lazy(() => import("./pages/HubPage"));
@@ -18,35 +18,6 @@ const FigurePage = lazy(() => import("./pages/FigurePage"));
 const FigureDetailPage = lazy(() => import("./pages/FigureDetailPage"));
 const BookPage = lazy(() => import("./pages/BookPage"));
 const ReaderPage = lazy(() => import("./pages/ReaderPage"));
-
-/** 空闲时预加载所有懒加载路由 chunk，消除首次切换的 Suspense 闪烁 */
-function usePreloadRoutes() {
-  useEffect(() => {
-    const run = () => {
-      void import("./pages/SearchPage");
-      void import("./pages/TextPage");
-      void import("./pages/HubPage");
-      void import("./pages/AboutPage");
-      void import("./pages/CirclePage");
-      void import("./pages/AtlasPage");
-      void import("./pages/FigurePage");
-      void import("./pages/FigureDetailPage");
-      void import("./pages/BookPage");
-      void import("./pages/ReaderPage");
-    };
-    if ("requestIdleCallback" in window) {
-      const id = (window as Window & {
-        requestIdleCallback: (cb: () => void) => number;
-      }).requestIdleCallback(run);
-      return () =>
-        (window as Window & {
-          cancelIdleCallback: (id: number) => void;
-        }).cancelIdleCallback(id);
-    }
-    const id = setTimeout(run, 1500);
-    return () => clearTimeout(id);
-  }, []);
-}
 
 /** 兼容旧链接 /figures/graph?focus=id → 新的集成星图模式，保留 focus */
 function GraphRedirect() {
@@ -94,7 +65,6 @@ function AnimatedRoutes() {
 }
 
 export default function App() {
-  usePreloadRoutes();
   return (
     <ErrorBoundary>
       <BrowserRouter>
