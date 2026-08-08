@@ -33,8 +33,8 @@ export default function ReaderPage() {
   const targetPid = searchParams.get("p");
   const fromNotes = searchParams.get("from") === "notes";
   const fromProgress = searchParams.get("from") === "progress";
-  /** 来源标记：人物生平跳转不带 from，其余带入栈路径（笔记/进度）均带标记 */
-  const fromMarker = searchParams.get("from");
+  /** 来源标记：仅人物生平跳转携带 from=figure，其余入栈路径（笔记/进度/兰台）均不触发背景高亮 */
+  const fromFigure = searchParams.get("from") === "figure";
   const { isAuthenticated } = useAuth();
 
   const { data, loading, error, refetch } = useApi<ChapterDetail>(
@@ -482,22 +482,22 @@ export default function ReaderPage() {
       <div className="lt-reader-layout">
         {/* 左栏：全书目录，快速跳篇 */}
         <aside className={`lt-reader-side${sideOpen ? " open" : ""}`}>
+          {/* 返回来源页：仅从读书笔记/阅读进度页进入时显示，锚定于目录面板正上方，右边缘与目录滚动条对齐 */}
+          {fromNotes && (
+            <Link to="/library?tab=notes" className="lt-reader-back-fab">
+              <span className="lt-return-arrow">↩</span>返回读书笔记
+            </Link>
+          )}
+          {fromProgress && (
+            <Link to="/library?tab=progress" className="lt-reader-back-fab">
+              <span className="lt-return-arrow">↩</span>返回阅读进度
+            </Link>
+          )}
           <div className="lt-side-head">
             <Link to={`/books/${ch.book_id}`}>{ch.book_name}</Link>
             <span className="lt-side-head-sub">
               {catalog ? `${catalog.chapters.length} 篇` : ""}
             </span>
-            {/* 返回来源页：仅从读书笔记/阅读进度页进入时显示，位于目录滚动条上方 */}
-            {fromNotes && (
-              <Link to="/library?tab=notes" className="lt-reader-back-fab">
-                <span className="lt-return-arrow">↩</span>返回读书笔记
-              </Link>
-            )}
-            {fromProgress && (
-              <Link to="/library?tab=progress" className="lt-reader-back-fab">
-                <span className="lt-return-arrow">↩</span>返回阅读进度
-              </Link>
-            )}
           </div>
           <nav className="lt-side-list">
             {catalog?.chapters.map((c) => {
@@ -547,7 +547,7 @@ export default function ReaderPage() {
             <div className="lt-passages">
               {ch.passages.map((p) => (
                 <div
-                  className={`lt-para${targetPid === p.id && !fromMarker ? " is-target" : ""}`}
+                  className={`lt-para${targetPid === p.id && fromFigure ? " is-target" : ""}`}
                   id={p.id}
                   key={p.id}
                 >

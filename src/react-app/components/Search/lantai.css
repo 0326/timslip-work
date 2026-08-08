@@ -570,21 +570,25 @@
   opacity: 0.7;
 }
 
+/* 返回读书笔记/阅读进度：锚定于左侧目录面板正上方，右边缘与目录滚动条对齐 */
 .lt-reader-back-fab {
+  position: absolute;
+  bottom: calc(100% + var(--space-xs));
+  right: 0;
+  z-index: 40;
   display: inline-flex;
   align-items: center;
   gap: 0.3em;
-  margin-left: var(--space-sm);
-  padding: 0.24rem 0.55rem;
+  padding: 0.3rem 0.65rem;
   border: 1px solid var(--rule);
   border-radius: 2px;
-  background: rgba(245, 240, 232, 0.9);
+  background: var(--bg);
+  box-shadow: 0 2px 8px rgba(37, 32, 24, 0.08);
   font-family: var(--font-sans);
-  font-size: 0.72rem;
+  font-size: 0.76rem;
   letter-spacing: 0.04em;
   color: var(--muted);
   white-space: nowrap;
-  flex: 0 0 auto;
   transition: color var(--duration-fast) var(--ease-ink), border-color var(--duration-fast) var(--ease-ink);
 }
 .lt-reader-back-fab:hover { color: var(--accent); border-color: var(--accent); }
@@ -1034,6 +1038,13 @@
     transition: transform var(--duration-normal) var(--ease-ink);
   }
   .lt-reader-side.open { transform: translateX(0); }
+  /* 移动端：目录为全屏抽屉，返回按钮改为固定在抽屉顶部、目录滚动条上方 */
+  .lt-reader-back-fab {
+    top: calc(56px + var(--space-sm));
+    right: var(--space-md);
+    bottom: auto;
+    z-index: 61;
+  }
   .lt-reader-backdrop {
     display: block;
     position: fixed;
