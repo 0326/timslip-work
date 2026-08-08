@@ -1,12 +1,13 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { getSave, putSave } from "../services/authClient";
-import type { Highlight, WorkSaveData, SaveConflictError } from "../types/auth";
+import { getSave, patchSave } from "../services/authClient";
+import type { Highlight, SaveConflictError } from "../types/auth";
 
 /**
  * 划线笔记 hook —— 基于云端存档（work_saves.highlights）
  *
  * 数据结构：highlights = { [bookId]: Highlight[] }
- * 读写模式：每次操作都读取最新存档 → 修改 highlights 字段 → 写回（带版本冲突检测）
+ * 读写模式：加载时读整档；写入时用 PATCH 字段级合并，只回传 highlights 子集，
+ *           避免每次都全量下载/上传整个存档（含阅读进度、收藏等无关字段）。
  */
 export function useHighlights(isAuthenticated: boolean) {
   const [highlights, setHighlights] = useState<Record<string, Highlight[]>>({});
@@ -36,23 +37,18 @@ export function useHighlights(isAuthenticated: boolean) {
     else { setHighlights({}); setLoading(false); }
   }, [isAuthenticated, loadHighlights]);
 
-  /** 写回云端存档（仅修改 highlights 字段，保留其余数据） */
+  /** 字段级写回划线：只合并 highlights 字段，保留其余数据 */
   const writeHighlights = useCallback(
     async (newHighlights: Record<string, Highlight[]>): Promise<boolean> => {
       try {
-        const res = await getSave();
-        const saveData: WorkSaveData = res.exists && res.save ? res.save : {};
-        const newSave: WorkSaveData = {
-          ...saveData,
-          highlights: newHighlights,
-        };
-        await putSave(newSave, Date.now(), "default", res.version);
-        versionRef.current = (res.version ?? 0) + 1;
+        const res = await patchSave({ highlights: newHighlights }, Date.now(), "default", versionRef.current);
+        versionRef.current = res.version;
         return true;
       } catch (err) {
         const conflict = err as SaveConflictError;
         if (conflict.error === "conflict") {
-          // 冲突：重新加载后重试一次
+          // 冲突：重新加载最新数据。不自动重试写入——PATCH 是字段级浅合并，
+          // 直接重试可能覆盖其他设备新增的划线。回滚乐观更新，让用户在最新数据上重试。
           await loadHighlights();
         }
         return false;

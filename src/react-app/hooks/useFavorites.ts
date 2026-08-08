@@ -1,10 +1,15 @@
 import { useState, useEffect, useCallback } from "react";
 
 /**
- * 人物收藏 hook —— 基于 localStorage 本地持久化
+ * 人物收藏 hook —— 基于 localStorage 本地持久化的模块级单例
  *
  * 存储格式：`timslip-figure-favorites` = JSON 数组（人物 ID 字符串）
- * 跨组件/标签页同步：监听 `storage` 事件 + 自定义 `timslip-favorites-change` 事件
+ *
+ * 设计说明：
+ * - 收藏状态提升为模块级单例（favs + 订阅者集合），所有组件共享同一份 Set，
+ *   避免每个组件各自持有独立状态导致的跨组件不一致与无谓重渲染。
+ * - 跨标签页同步：监听 `storage` 事件。
+ * - 本标签页内同步：单例内置订阅者列表，toggle 后通知所有订阅者。
  */
 
 const STORAGE_KEY = "timslip-figure-favorites";
@@ -29,31 +34,51 @@ function writeFavs(favs: Set<string>) {
   }
 }
 
+// ── 模块级单例状态 ──
+let singletonFavs: Set<string> = readFavs();
+const listeners = new Set<() => void>();
+
+function notify() {
+  listeners.forEach((fn) => fn());
+}
+
+function toggleFav(id: string) {
+  const next = new Set(singletonFavs);
+  if (next.has(id)) next.delete(id);
+  else next.add(id);
+  singletonFavs = next;
+  writeFavs(next);
+  // 本标签页通知订阅者 + 同步给其它标签页
+  notify();
+  window.dispatchEvent(new CustomEvent(CHANGE_EVENT));
+}
+
 export function useFavorites() {
-  const [favs, setFavs] = useState<Set<string>>(() => readFavs());
+  const [favs, setFavs] = useState<Set<string>>(singletonFavs);
 
   useEffect(() => {
-    const sync = () => setFavs(readFavs());
-    window.addEventListener("storage", sync);
-    window.addEventListener(CHANGE_EVENT, sync);
+    // 本标签页：toggleFav 已更新 singletonFavs，直接同步到 React state（无需重读 localStorage）
+    const syncLocal = () => setFavs(singletonFavs);
+    // 跨标签页：从 localStorage 重新读取（其他标签页的写入只反映在 storage 事件中）
+    const syncStorage = () => {
+      singletonFavs = readFavs();
+      setFavs(singletonFavs);
+    };
+    listeners.add(syncLocal);
+    window.addEventListener("storage", syncStorage);
+    window.addEventListener(CHANGE_EVENT, syncLocal);
     return () => {
-      window.removeEventListener("storage", sync);
-      window.removeEventListener(CHANGE_EVENT, sync);
+      listeners.delete(syncLocal);
+      window.removeEventListener("storage", syncStorage);
+      window.removeEventListener(CHANGE_EVENT, syncLocal);
     };
   }, []);
 
   const toggleFavorite = useCallback((id: string) => {
-    // 基于当前 favs 直接计算新值，副作用（writeFavs + dispatchEvent）在 setFavs 外执行，
-    // 避免 React 18 StrictMode 双调用 updater 导致 toggle 互相抵消。
-    const next = new Set(favs);
-    if (next.has(id)) next.delete(id);
-    else next.add(id);
-    writeFavs(next);
-    setFavs(next);
-    window.dispatchEvent(new CustomEvent(CHANGE_EVENT));
-  }, [favs]);
+    toggleFav(id);
+  }, []);
 
-  const isFavorite = useCallback((id: string) => favs.has(id), [favs]);
+  const isFavorite = useCallback((id: string) => singletonFavs.has(id), []);
 
   return { isFavorite, toggleFavorite, favorites: favs };
 }

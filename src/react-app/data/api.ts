@@ -177,6 +177,7 @@ export function getFigures(opts?: {
   q?: string;
   sort?: "era" | "star";
   minStar?: number;
+  ids?: string[];
 }): Promise<FigureListResponse> {
   const params = new URLSearchParams();
   if (opts?.page) params.set("page", String(opts.page));
@@ -186,6 +187,7 @@ export function getFigures(opts?: {
   if (opts?.q) params.set("q", opts.q);
   if (opts?.sort) params.set("sort", opts.sort);
   if (opts?.minStar) params.set("minStar", String(opts.minStar));
+  if (opts?.ids && opts.ids.length > 0) params.set("ids", opts.ids.join(","));
   return request<FigureListResponse>(`${BASE}/figures?${params}`);
 }
 

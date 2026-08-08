@@ -10,7 +10,7 @@ import { GlossText } from "../components/Common/GlossText";
 import { parseTermPinyin } from "../data/glossPinyin";
 import { useBgm } from "../store/audioStore";
 import { useAuth } from "../store/authStore";
-import { getSave, putSave } from "../services/authClient";
+import { getSave, patchSave } from "../services/authClient";
 import type { ReadingProgressEntry, WorkSaveData } from "../types/auth";
 import { useHighlights } from "../hooks/useHighlights";
 import "../components/Search/lantai.css";
@@ -58,7 +58,6 @@ export default function ReaderPage() {
     addHighlight,
     removeHighlight,
     getBookHighlights,
-    loadHighlights,
   } = useHighlights(isAuthenticated);
 
   const hasVernacular = useMemo(
@@ -151,7 +150,7 @@ export default function ReaderPage() {
     activeRef.current?.scrollIntoView({ block: "center" });
   }, [catalog, id]);
 
-  // 记录阅读进度：用户翻开篇章即自动记录到云端存档
+  // 记录阅读进度：用户翻开篇章即自动记录到云端存档（带防抖，合并快速翻篇的连续写入）
   useEffect(() => {
     if (!isAuthenticated || !data || !catalog) return;
     const chapterId = data.id;
@@ -190,22 +189,24 @@ export default function ReaderPage() {
           lastReadAt: Date.now(),
         };
 
-        const newSave: WorkSaveData = {
-          ...saveData,
-          readingProgress: {
-            ...readingProgress,
-            [bookIdForProgress]: entry,
-          },
+        const newReadingProgress = {
+          ...readingProgress,
+          [bookIdForProgress]: entry,
         };
 
-        await putSave(newSave, Date.now(), "default", res.version);
+        // 字段级写入：只回传 readingProgress，避免整档往返（含 highlights 等大字段）
+        await patchSave({ readingProgress: newReadingProgress }, Date.now(), "default", res.version);
       } catch {
         // 静默失败
       }
     };
 
-    recordProgress();
-    return () => { cancelled = true; };
+    // 防抖 2s：快速翻篇时只写最后一次，减少整档写入与版本冲突
+    const timer = setTimeout(recordProgress, 2000);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated, data?.id, catalog]);
 
@@ -284,13 +285,12 @@ export default function ReaderPage() {
     if (ok) {
       setHighlightToast("已划线");
       setTimeout(() => setHighlightToast(null), 1800);
-      // 刷新笔记数据
-      await loadHighlights();
+      // 划线已通过乐观更新写入本地状态，无需再整档拉取（避免冗余网络往返）
     } else {
       setHighlightToast("划线失败或已存在");
       setTimeout(() => setHighlightToast(null), 1800);
     }
-  }, [data, selectionBox, addHighlight, loadHighlights]);
+  }, [data, selectionBox, addHighlight]);
 
   /** 切换笔记面板时默认全选当前书的所有划线 */
   const toggleNotesPanel = useCallback(() => {

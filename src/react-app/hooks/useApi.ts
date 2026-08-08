@@ -34,6 +34,12 @@ export function useApi<T>(
 
   const refetch = useCallback(() => setNonce((n) => n + 1), []);
 
+  // 序列化 deps，仅当其内容真正变化时才触发重新请求。
+  // 避免调用方每次渲染传入新数组引用（[...deps]）导致 effect 反复执行。
+  // 约束：deps 只能包含可序列化值（string/number/boolean/null），
+  // 传入函数、Symbol 或循环引用会导致序列化异常或 key 丢失。
+  const depsKey = JSON.stringify(deps);
+
   useEffect(() => {
     let cancelled = false;
     // 有缓存时不闪 loading，后台静默 revalidate
@@ -57,7 +63,7 @@ export function useApi<T>(
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [...deps, nonce]);
+  }, [depsKey, nonce, cacheKey]);
 
   return { data, loading, error, refetch };
 }

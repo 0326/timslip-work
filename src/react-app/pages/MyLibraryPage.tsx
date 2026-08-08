@@ -90,16 +90,16 @@ export default function MyLibraryPage() {
     if (favIdList.length === 0) { setFavItems([]); return; }
     let cancelled = false;
     setFavLoading(true);
-    getFigures({ page: 1, limit: 500, sort: favSortMode })
+    // 按实际收藏 ID 精确查询，避免拉取全量人物再客户端过滤
+    getFigures({ ids: favIdList })
       .then((res) => {
         if (cancelled) return;
-        const favSet = new Set(favIdList);
-        setFavItems(res.items.filter((f) => favSet.has(f.id)));
+        setFavItems(res.items);
       })
       .catch(() => { if (!cancelled) setFavItems([]); })
       .finally(() => { if (!cancelled) setFavLoading(false); });
     return () => { cancelled = true; };
-  }, [favIdList, favSortMode]);
+  }, [favIdList]);
 
   /** 从存档读取阅读进度列表 */
   const loadProgress = useCallback(async () => {

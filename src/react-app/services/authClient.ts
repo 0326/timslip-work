@@ -90,6 +90,22 @@ export async function putSave(
 	});
 }
 
+/**
+ * 字段级增量写回：只合并指定顶层字段（如 highlights），避免整档往返。
+ * @param fields 需要合并的顶层字段子集
+ */
+export async function patchSave(
+	fields: Partial<WorkSaveData>,
+	clientUpdatedAt: number,
+	slot = "default",
+	expectedVersion?: number,
+): Promise<{ ok: true; version: number; updatedAt: number }> {
+	return request("/user/save" + (slot !== "default" ? `?slot=${encodeURIComponent(slot)}` : ""), {
+		method: "PATCH",
+		body: JSON.stringify({ fields, clientUpdatedAt, expectedVersion }),
+	});
+}
+
 export async function deleteSave(slot = "default"): Promise<{ ok: true }> {
 	return request(`/user/save?slot=${encodeURIComponent(slot)}`, { method: "DELETE" });
 }
