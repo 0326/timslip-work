@@ -82,10 +82,13 @@ app.use("/api/*", async (c, next) => {
   if (!host.startsWith("localhost") && !host.startsWith("127.0.0.1")) {
     c.header("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
   }
-  // CSP：基于当前站点白名单，只允许同源脚本和样式
+  // CSP：基于当前站点白名单，只允许同源脚本和样式。
+  // dev 环境（localhost / 127.0.0.1）保留 'unsafe-eval'（Vite HMR 依赖）；
+  // 生产环境移除 'unsafe-eval'，收窄攻击面。
+  const isLocalDev = host.startsWith("localhost") || host.startsWith("127.0.0.1");
   c.header("Content-Security-Policy",
     "default-src 'self'; " +
-    "script-src 'self' 'unsafe-inline' 'unsafe-eval'; " +
+    `script-src 'self' 'unsafe-inline'${isLocalDev ? " 'unsafe-eval'" : ""}; ` +
     "style-src 'self' 'unsafe-inline'; " +
     "img-src 'self' data: https:; " +
     "font-src 'self' data:; " +
@@ -199,6 +202,17 @@ function kvPutSafe(c: Context<{ Bindings: Env }>, key: string, value: string, tt
   }
 }
 
+/**
+ * 返回 KV 命中数据并下发缓存响应头，让 Cloudflare 边缘节点直接缓存静态接口，
+ * 避免「Worker → KV → JSON.parse → 返回」的完整链路重复执行。
+ * @param ttlSeconds 浏览器/CDN 缓存时长（秒）
+ */
+function cachedJson(c: Context<{ Bindings: Env }>, data: unknown, ttlSeconds: number): Response {
+  c.header("X-Cache", "HIT");
+  c.header("Cache-Control", `public, max-age=${ttlSeconds}, stale-while-revalidate=${ttlSeconds * 24}`);
+  return c.json(data);
+}
+
 // ── 反序列化 passage 行（glosses JSON → array） ──
 function deserializePassage(row: Record<string, unknown>): Passage {
   return {
@@ -235,7 +249,7 @@ app.get("/api/text/:id{.+}", async (c) => {
   // 查 KV
   try {
     const cached = await c.env.KV.get(`passage:${id}`);
-    if (cached) return c.json(JSON.parse(cached));
+    if (cached) return cachedJson(c, JSON.parse(cached), 300);
   } catch { /* KV unavailable, fall through */ }
 
   // 查 D1
@@ -381,7 +395,7 @@ app.get("/api/search", async (c) => {
 app.get("/api/timeline", async (c) => {
   try {
     const cached = await c.env.KV.get("timeline:dynasties");
-    if (cached) return c.json(JSON.parse(cached));
+    if (cached) return cachedJson(c, JSON.parse(cached), 300);
   } catch { /* KV unavailable, fall through */ }
 
   const dynastiesResult = await getDb(c.env).prepare(
@@ -457,6 +471,10 @@ app.get("/api/books/:id/volumes", async (c) => {
 // 某书完整目录（书籍介绍页 + 目录页用）：篇章 join 卷元信息、附段落数
 app.get("/api/books/:id/catalog", async (c) => {
   const id = c.req.param("id");
+  const cacheKey = `catalog:${id}`;
+  const cached = await kvGetSafe(c.env, cacheKey);
+  if (cached) return cachedJson(c, JSON.parse(cached), 300);
+
   const book = await getDb(c.env).prepare(
     `SELECT b.*, (SELECT COUNT(*) FROM volumes v WHERE v.book_id = b.id) AS imported_volumes
      FROM books b WHERE b.id = ?`,
@@ -480,15 +498,21 @@ app.get("/api/books/:id/catalog", async (c) => {
     .bind(id)
     .all();
 
-  return c.json({
+  const data = {
     book: book as unknown as Book,
     chapters: chapters.results as unknown as CatalogChapter[],
-  } satisfies BookCatalog);
+  } satisfies BookCatalog;
+  kvPutSafe(c, cacheKey, JSON.stringify(data), 604800);
+  return c.json(data);
 });
 
 // 篇章详情（id 含斜杠）：附书/卷上下文、白话/注释、前后篇导航
 app.get("/api/chapters/:id{.+}", async (c) => {
   const id = c.req.param("id");
+  const cacheKey = `chapter:${id}`;
+  const cached = await kvGetSafe(c.env, cacheKey);
+  if (cached) return cachedJson(c, JSON.parse(cached), 300);
+
   const chapter = await getDb(c.env).prepare(
     `SELECT ch.*, v.book_id, v.volume_no, v.category, v.name AS volume_name, b.name AS book_name
      FROM chapters ch
@@ -536,12 +560,14 @@ app.get("/api/chapters/:id{.+}", async (c) => {
     version: row.version as number,
   }));
 
-  return c.json({
+  const data = {
     ...(chapter as unknown as ChapterDetail),
     passages: passageList,
     prev,
     next,
-  } satisfies ChapterDetail);
+  } satisfies ChapterDetail;
+  kvPutSafe(c, cacheKey, JSON.stringify(data), 604800);
+  return c.json(data);
 });
 
 // 实体详情（id 含斜杠，如 person/xiangyu）— P1
@@ -711,6 +737,34 @@ app.get("/api/figures", async (c) => {
   const q = c.req.query("q");
   const sort = c.req.query("sort") === "star" ? "star" : "era"; // era=历史时序（默认） | star=星级
   const minStar = Math.min(5, Math.max(0, Number(c.req.query("minStar") || 0)));
+  // 按 ids 精确查询（如「我的收藏」）：逗号分隔，绕过 KV 缓存以返回最新数据
+  const idsParam = c.req.query("ids");
+  const ids = idsParam
+    ? idsParam.split(",").map((s) => s.trim()).filter(Boolean)
+    : [];
+
+  if (ids.length > 0) {
+    // D1 每个 prepared statement 最多 100 个绑定参数，分片查询避免超限
+    const BATCH = 95;
+    const allItems: Figure[] = [];
+    for (let i = 0; i < ids.length; i += BATCH) {
+      const batch = ids.slice(i, i + BATCH);
+      const placeholders = batch.map(() => "?").join(", ");
+      const idRows = await getDb(c.env).prepare(
+        `SELECT id, name, aliases, birth_year, death_year, dynasty, identity, bio_summary, keyword_tags, avatar_icon, avatar_url, gender, star, src_book, src_juan, src_chapter,
+          (SELECT af.r2_key FROM figure_assets fa
+             JOIN asset_files af ON af.asset_id = fa.id AND af.asset_type = 'avatar'
+            WHERE fa.figure_id = figures.id AND fa.status = 'active'
+            ORDER BY fa.is_default DESC, (af.variant = 'default') DESC, af.sort_order ASC
+            LIMIT 1) AS avatar_key
+        FROM figures
+         WHERE id IN (${placeholders})
+         ORDER BY name ASC`
+       ).bind(...batch).all<Record<string, unknown>>();
+      allItems.push(...idRows.results.map(rowToFigure));
+    }
+    return c.json({ total: allItems.length, page: 1, limit: allItems.length, items: allItems, filters: { dynasties: [], identities: [] } } satisfies FigureListResponse);
+  }
 
   // 人物为静态数据 → 整响应 KV 缓存（TTL 7 天），命中即 0 次库读。
   // 版本前缀 v2 = 去重+星级后；重灌/重排数据后 bump 版本即整体失效。
@@ -718,8 +772,7 @@ app.get("/api/figures", async (c) => {
   const listCacheKey = `figures:list:v6:${sort}:${page}:${limit}:${book || ""}:${dynasty || ""}:${identity || ""}:${minStar}:${q || ""}`;
   const listCached = await kvGetSafe(c.env, listCacheKey);
   if (listCached) {
-    c.header("X-Cache", "HIT");
-    return c.json(JSON.parse(listCached));
+    return cachedJson(c, JSON.parse(listCached), 300);
   }
 
   const where: string[] = [];
@@ -949,10 +1002,7 @@ app.get("/api/figures/graph", async (c) => {
   const cacheKey = `graph:v3:top${top}${focusId ? `:${focusId}` : ""}${egoDepth ? `:d${egoDepth}` : ""}`;
   try {
     const cached = await c.env.KV.get(cacheKey);
-    if (cached) {
-      c.header("X-Cache", "HIT");
-      return c.json(JSON.parse(cached));
-    }
+    if (cached) return cachedJson(c, JSON.parse(cached), 300);
   } catch { /* KV unavailable in local dev, fall through */ }
 
   // 先算度数（仅从关系表，不拉全量人物）
@@ -1810,5 +1860,59 @@ app.get("/api/atlas/snapshots/:slug", async (c) => {
 
 app.route("/api/auth", authRoutes);
 app.route("/api/user", userRoutes);
+
+// ── 管理端：清除内容缓存 ──
+// 数据导入/修订后调用，清除 catalog/chapter/graph 等静态内容 KV 缓存。
+// 鉴权：dev 环境直接放行；生产要求 X-Admin-Key。
+// 查询参数 scope=catalog|chapter|graph|figures|timeline|all（默认 all）
+app.post("/api/admin/cache/invalidate", async (c) => {
+  const { ADMIN_KEY, ENVIRONMENT } = (c.env as unknown as {
+    ADMIN_KEY?: string;
+    ENVIRONMENT?: string;
+  });
+  const host = c.req.header("host") || "";
+  const isDev =
+    host.startsWith("localhost") ||
+    host.startsWith("127.0.0.1") ||
+    host.endsWith(".workers.dev") ||
+    ENVIRONMENT === "development" ||
+    ENVIRONMENT === "preview";
+  if (!isDev) {
+    const key = c.req.header("X-Admin-Key");
+    if (!ADMIN_KEY || key !== ADMIN_KEY) {
+      return errorResponse("UNAUTHORIZED", "Admin key required", 401);
+    }
+  }
+
+  const scope = c.req.query("scope") || "all";
+  const prefixMap: Record<string, string[]> = {
+    catalog: ["catalog:"],
+    chapter: ["chapter:"],
+    graph: ["graph:"],
+    figures: ["figures:"],
+    timeline: ["timeline:"],
+    all: ["catalog:", "chapter:", "graph:", "figures:", "timeline:"],
+  };
+  const prefixes = prefixMap[scope] || prefixMap.all;
+
+  let deleted = 0;
+  try {
+    for (const prefix of prefixes) {
+      let cursor: string | undefined;
+      do {
+        const list = await c.env.KV.list({ prefix, cursor });
+        for (const key of list.keys) {
+          c.executionCtx.waitUntil(c.env.KV.delete(key.name).catch(() => {}));
+          deleted++;
+        }
+        cursor = list.list_complete ? undefined : list.cursor;
+      } while (cursor);
+    }
+  } catch {
+    // KV 不可用（本地 dev），静默跳过
+  }
+
+  return c.json({ ok: true, scope, deleted });
+});
 
 export default app;

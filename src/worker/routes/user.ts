@@ -110,6 +110,57 @@ user.delete("/save", async (c) => {
 	return c.json({ ok: true });
 });
 
+/**
+ * 字段级增量写回：只合并前端传入的顶层字段，避免整档 JSON 往返。
+ * 用于划线笔记等高频、字段独立的写操作，从根本上消除「后写覆盖先写」的写放大。
+ */
+user.patch("/save", async (c) => {
+	const body = (await c.req.json().catch(() => ({}))) as {
+		fields?: Partial<WorkSaveData>;
+		clientUpdatedAt?: number;
+		slot?: string;
+		expectedVersion?: number;
+	};
+	const fields = body.fields;
+	if (!fields || typeof fields !== "object" || Array.isArray(fields) || Object.keys(fields).length === 0) {
+		return c.json({ error: "bad_request", message: "缺少待合并字段" }, 400);
+	}
+	const slot = body.slot ?? "default";
+	const userId = c.var.user.sub;
+	const now = Date.now();
+
+	const existing = await c.env.USER_DB!.prepare("SELECT data, version FROM work_saves WHERE user_id = ? AND slot = ?")
+		.bind(userId, slot)
+		.first<{ data: string; version: number }>();
+
+	if (existing) {
+		if (body.expectedVersion !== undefined && existing.version !== body.expectedVersion) {
+			return c.json({ error: "conflict", message: "云端存档已更新，请先同步", serverVersion: existing.version }, 409);
+		}
+		let current: WorkSaveData;
+		try {
+			current = JSON.parse(existing.data);
+		} catch {
+			current = {};
+		}
+		const merged: WorkSaveData = { ...current, ...fields };
+		const newVersion = existing.version + 1;
+		await c.env.USER_DB!.prepare(
+			"UPDATE work_saves SET data = ?, updated_at = ?, client_updated_at = ?, version = ? WHERE user_id = ? AND slot = ?",
+		)
+			.bind(JSON.stringify(merged), now, body.clientUpdatedAt ?? now, newVersion, userId, slot)
+			.run();
+		return c.json({ ok: true, version: newVersion, updatedAt: now });
+	} else {
+		await c.env.USER_DB!.prepare(
+			"INSERT INTO work_saves (user_id, slot, data, updated_at, client_updated_at, version) VALUES (?, ?, ?, ?, ?, 1)",
+		)
+			.bind(userId, slot, JSON.stringify(fields), now, body.clientUpdatedAt ?? now)
+			.run();
+		return c.json({ ok: true, version: 1, updatedAt: now });
+	}
+});
+
 user.patch("/me", async (c) => {
 	const body = (await c.req.json().catch(() => ({}))) as { nickname?: string };
 	const nickname = body.nickname?.trim();
