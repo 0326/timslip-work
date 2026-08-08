@@ -45,25 +45,19 @@ export default defineConfig({
         rollupOptions: {
             output: {
                 manualChunks(id) {
-                    // React 核心包
-                    if (id.includes('node_modules/react') || id.includes('node_modules/react-dom') || id.includes('node_modules/react-router')) {
-                        return 'vendor-react';
-                    }
-                    // 地图库（仅舆图页面使用）
+                    // 地图库（仅舆图页面使用，不依赖 React，可独立拆分）
                     if (id.includes('node_modules/maplibre-gl')) {
                         return 'vendor-maplibre';
                     }
-                    // 3D 图谱库（仅人物关系图谱使用）
+                    // 3D 图谱库（仅人物关系图谱使用，不依赖 React，可独立拆分）
                     if (id.includes('node_modules/three') || id.includes('node_modules/3d-force-graph') || id.includes('node_modules/d3-force')) {
                         return 'vendor-three';
                     }
-                    // 动效库（全站使用但体量大）
-                    if (id.includes('node_modules/framer-motion')) {
-                        return 'vendor-framer';
-                    }
-                    // 其他 node_modules 依赖统一打包
+                    // 其余 node_modules 统一打包为一个 vendor chunk。
+                    // React / react-dom / react-router / framer-motion / lucide-react 等存在
+                    // 互相依赖关系，拆开会导致加载顺序不可控（如 createContext 在 React 之前执行）。
                     if (id.includes('node_modules')) {
-                        return 'vendor-other';
+                        return 'vendor';
                     }
                 },
             },
