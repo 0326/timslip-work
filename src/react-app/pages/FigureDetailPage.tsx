@@ -247,17 +247,24 @@ export default function FigureDetailPage() {
 
   const localBundle = useMemo(() => (id ? localBundleAsFigureBundle(id) : null), [id]);
   const [assetBundle, setAssetBundle] = useState<FigureBundle | null>(localBundle);
+  // 资产 bundle 是否已拉取完成（成功失败都算完成）。就绪前不参与布局判定，避免低配→全屏跳版。
+  const [assetsReady, setAssetsReady] = useState(false);
 
   useEffect(() => {
     if (!id) return;
     setAssetBundle(localBundleAsFigureBundle(id));
+    setAssetsReady(false); // 切换人物时重置，避免残留上一人的就绪态
     let cancelled = false;
-    fetchFigureBundle(id).then((remote) => {
-      if (cancelled) return;
-      if (remote) {
-        setAssetBundle((prev) => mergeBundles(prev, remote));
-      }
-    });
+    fetchFigureBundle(id)
+      .then((remote) => {
+        if (cancelled) return;
+        if (remote) {
+          setAssetBundle((prev) => mergeBundles(prev, remote));
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setAssetsReady(true);
+      });
     return () => { cancelled = true; };
   }, [id]);
 
@@ -329,6 +336,8 @@ export default function FigureDetailPage() {
   }, [id]);
 
   if (loading && !figure) return <Loading />;
+  // 资产 bundle 未就绪前不参与布局判定，先占位，避免基于空资产渲染低配布局后再跳版为全屏
+  if (figure && !assetsReady) return <Loading />;
 
   // API 失败时的降级：如有本地资产则构造最小 figure 对象继续渲染
   const hasLocalAssets = localBundle && (
@@ -381,7 +390,7 @@ export default function FigureDetailPage() {
   const titlePlates = displayFigure.aliases?.filter((a) => a.length > 1).slice(0, 4) || [];
   const hasQuests = figure ? figure.passages.length > 0 : false;
   const highRarity = displayFigure.star >= 4;
-  const hasFullScene = highRarity && !!(defaultAsset && (pickAssetFile(defaultAsset, "portrait-full") || pickAssetFile(defaultAsset, "portrait-bust")));
+  const hasFullScene = assetsReady && highRarity && !!(defaultAsset && (pickAssetFile(defaultAsset, "portrait-full") || pickAssetFile(defaultAsset, "portrait-bust")));
   const isDegraded = !!error && !figure; // 降级模式标记
 
   // 提取首行内容为变量，避免在 flex header 和正常流中重复编写
