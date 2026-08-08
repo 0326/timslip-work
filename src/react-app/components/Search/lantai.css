@@ -570,20 +570,20 @@
   opacity: 0.7;
 }
 
-/* 返回读书笔记/阅读进度：锚定于左侧目录面板正上方，右边缘与目录滚动条对齐 */
+/* 返回读书笔记/阅读进度：位于工具栏内，垂直居中与白话/笔记对齐，右边缘对齐左侧目录滚动条 */
 .lt-reader-back-fab {
   position: absolute;
-  bottom: calc(100% + var(--space-xs));
-  right: 0;
-  z-index: 40;
+  top: 50%;
+  transform: translateY(-50%);
+  right: calc(50% + 324px);
+  z-index: 10;
   display: inline-flex;
   align-items: center;
   gap: 0.3em;
   padding: 0.3rem 0.65rem;
   border: 1px solid var(--rule);
   border-radius: 2px;
-  background: var(--bg);
-  box-shadow: 0 2px 8px rgba(37, 32, 24, 0.08);
+  background: transparent;
   font-family: var(--font-sans);
   font-size: 0.76rem;
   letter-spacing: 0.04em;
@@ -989,6 +989,13 @@
 }
 
 /* ── 响应式 ── */
+/* 中间宽度（961–1160px）：二栏布局铺满视口，目录滚动条右边缘整体左移，重新对齐 */
+@media (min-width: 961px) and (max-width: 1160px) {
+  .lt-reader-back-fab {
+    right: calc(100% - 256px);
+  }
+}
+
 @media (max-width: 960px) {
   /* 书籍页：左信息栏化为顶部块，类目导航转横排 */
   .lt-book-layout {
@@ -1038,12 +1045,10 @@
     transition: transform var(--duration-normal) var(--ease-ink);
   }
   .lt-reader-side.open { transform: translateX(0); }
-  /* 移动端：目录为全屏抽屉，返回按钮改为固定在抽屉顶部、目录滚动条上方 */
+  /* 移动端：目录为抽屉，返回按钮改在工具栏右侧兜底显示 */
   .lt-reader-back-fab {
-    top: calc(56px + var(--space-sm));
     right: var(--space-md);
-    bottom: auto;
-    z-index: 61;
+    left: auto;
   }
   .lt-reader-backdrop {
     display: block;
