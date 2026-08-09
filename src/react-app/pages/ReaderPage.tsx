@@ -11,7 +11,7 @@ import { parseTermPinyin } from "../data/glossPinyin";
 import { useBgm } from "../store/audioStore";
 import { useAuth } from "../store/authStore";
 import { getSave, patchSave } from "../services/authClient";
-import type { ReadingProgressEntry, WorkSaveData } from "../types/auth";
+import type { ReadingProgressEntry, SaveConflictError, WorkSaveData } from "../types/auth";
 import { useHighlights } from "../hooks/useHighlights";
 import "../components/Search/lantai.css";
 
@@ -157,7 +157,7 @@ export default function ReaderPage() {
     const bookIdForProgress = data.book_id;
     let cancelled = false;
 
-    const recordProgress = async () => {
+    const recordProgress = async (attempt = 0) => {
       try {
         const res = await getSave();
         if (cancelled) return;
@@ -196,8 +196,13 @@ export default function ReaderPage() {
 
         // 字段级写入：只回传 readingProgress，避免整档往返（含 highlights 等大字段）
         await patchSave({ readingProgress: newReadingProgress }, Date.now(), "default", res.version);
-      } catch {
-        // 静默失败
+      } catch (err) {
+        // 冲突（版本被其他字段如划线写入推进）时重新拉取最新进度并重试，避免进度静默丢失
+        const conflict = (err as SaveConflictError)?.error === "conflict";
+        if (conflict && attempt < 2 && !cancelled) {
+          return recordProgress(attempt + 1);
+        }
+        // 其余情况静默失败
       }
     };
 

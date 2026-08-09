@@ -30,8 +30,10 @@ const cache = new Map<string, { data: unknown; ts: number; ttl: number }>();
 const inflight = new Map<string, Promise<unknown>>();
 
 // === localStorage 持久化（跨会话缓存静态数据）===
+// v11：2026-08-10 二十四史迁移后章节/目录 ID 格式变更（旧 songshu/001/c → 新 songshu/01/c001），
+//      升级版本号强制全量抛弃旧 localStorage 缓存，避免旧格式 ID 命中导致章节 404。
 const LS_PREFIX = "api-cache:";
-const LS_VERSION = "v10";
+const LS_VERSION = "v11";
 
 function lsRead<T>(url: string): T | undefined {
   try {

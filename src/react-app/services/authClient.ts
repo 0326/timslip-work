@@ -6,12 +6,14 @@ import type {
 	SaveResponse,
 	SaveConflictError,
 } from "../types/auth";
+import { openLoginModal } from "../store/authModalStore";
 
 const API_BASE = "/api";
 
 async function request<T>(
 	path: string,
 	options: RequestInit = {},
+	authRequired = false,
 ): Promise<T> {
 	const res = await fetch(`${API_BASE}${path}`, {
 		...options,
@@ -31,6 +33,10 @@ async function request<T>(
 		}
 		if (res.status === 409 && errData.error === "conflict") {
 			throw errData as SaveConflictError;
+		}
+		// 会话过期/未登录：自动弹出全局登录框，避免只抛出难懂的报错
+		if (res.status === 401 && authRequired) {
+			openLoginModal();
 		}
 		throw errData;
 	}
@@ -75,7 +81,7 @@ export async function checkUsername(username: string): Promise<{ valid: boolean;
 }
 
 export async function getSave(slot = "default"): Promise<SaveResponse> {
-	return request<SaveResponse>(`/user/save?slot=${encodeURIComponent(slot)}`);
+	return request<SaveResponse>(`/user/save?slot=${encodeURIComponent(slot)}`, {}, true);
 }
 
 export async function putSave(
@@ -87,7 +93,7 @@ export async function putSave(
 	return request("/user/save" + (slot !== "default" ? `?slot=${encodeURIComponent(slot)}` : ""), {
 		method: "PUT",
 		body: JSON.stringify({ save, clientUpdatedAt, expectedVersion }),
-	});
+	}, true);
 }
 
 /**
@@ -103,16 +109,16 @@ export async function patchSave(
 	return request("/user/save" + (slot !== "default" ? `?slot=${encodeURIComponent(slot)}` : ""), {
 		method: "PATCH",
 		body: JSON.stringify({ fields, clientUpdatedAt, expectedVersion }),
-	});
+	}, true);
 }
 
 export async function deleteSave(slot = "default"): Promise<{ ok: true }> {
-	return request(`/user/save?slot=${encodeURIComponent(slot)}`, { method: "DELETE" });
+	return request(`/user/save?slot=${encodeURIComponent(slot)}`, { method: "DELETE" }, true);
 }
 
 export async function updateNickname(nickname: string): Promise<{ ok: true; nickname: string }> {
 	return request("/user/me", {
 		method: "PATCH",
 		body: JSON.stringify({ nickname }),
-	});
+	}, true);
 }

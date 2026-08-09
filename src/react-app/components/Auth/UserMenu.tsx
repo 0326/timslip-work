@@ -1,15 +1,13 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../store/authStore";
-import AuthModal from "./AuthModal";
+import { openLoginModal } from "../../store/authModalStore";
 import "./auth.css";
 
 export default function UserMenu() {
 	const { user, isAuthenticated, isLoading, logout } = useAuth();
 	const navigate = useNavigate();
 	const [menuOpen, setMenuOpen] = useState(false);
-	const [authModalOpen, setAuthModalOpen] = useState(false);
-	const [authMode, setAuthMode] = useState<"login" | "register">("login");
 	const menuRef = useRef<HTMLDivElement>(null);
 
 	useEffect(() => {
@@ -23,14 +21,12 @@ export default function UserMenu() {
 	}, []);
 
 	const openLogin = () => {
-		setAuthMode("login");
-		setAuthModalOpen(true);
+		openLoginModal("login");
 		setMenuOpen(false);
 	};
 
 	const openRegister = () => {
-		setAuthMode("register");
-		setAuthModalOpen(true);
+		openLoginModal("register");
 		setMenuOpen(false);
 	};
 
@@ -51,13 +47,10 @@ export default function UserMenu() {
 
 	if (!isAuthenticated) {
 		return (
-			<>
-				<div className="auth-btns">
-					<button className="auth-btn-login" onClick={openLogin}>登录</button>
-					<button className="auth-btn-register" onClick={openRegister}>注册</button>
-				</div>
-				<AuthModal open={authModalOpen} onClose={() => setAuthModalOpen(false)} initialMode={authMode} />
-			</>
+			<div className="auth-btns">
+				<button className="auth-btn-login" onClick={openLogin}>登录</button>
+				<button className="auth-btn-register" onClick={openRegister}>注册</button>
+			</div>
 		);
 	}
 
@@ -97,7 +90,6 @@ export default function UserMenu() {
 					</div>
 				)}
 			</div>
-			<AuthModal open={authModalOpen} onClose={() => setAuthModalOpen(false)} initialMode={authMode} />
 		</>
 	);
 }

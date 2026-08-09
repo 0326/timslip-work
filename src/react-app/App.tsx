@@ -6,6 +6,7 @@ import { ErrorBoundary } from "./components/Common/ErrorBoundary";
 import { Header } from "./components/Common/Header";
 import { AuthProvider } from "./store/authStore";
 import { AudioProvider } from "./store/audioStore";
+import AuthModalController from "./components/Auth/AuthModalController";
 
 const Home = lazy(() => import("./pages/Home"));
 const SearchPage = lazy(() => import("./pages/SearchPage"));
@@ -79,6 +80,7 @@ export default function App() {
               </Suspense>
             </div>
           </AudioProvider>
+          <AuthModalController />
         </AuthProvider>
       </BrowserRouter>
     </ErrorBoundary>

@@ -33,11 +33,21 @@ export function WechatQrcodeModal({ open, onClose, figure, qrcodeUrl }: WechatQr
     };
   }, [open, onClose]);
 
-  // URL 变化时重置图片状态
+  // URL 变化时重置图片状态。
+  // 仅在 qrcodeUrl 为空时重置：父组件每次打开都是先置 null 再赋值，URL 变化总经过 null，
+  // 若在 URL 赋值那次也重置，会与下方缓存图片的 ref-complete 检查竞态，导致重开时被重置打死 loading。
   useEffect(() => {
-    setImgLoaded(false);
-    setImgError(false);
+    if (!qrcodeUrl) {
+      setImgLoaded(false);
+      setImgError(false);
+    }
   }, [qrcodeUrl]);
+
+  // 缓存图片可能同步完成加载，load 事件有机会在 React 挂载 onLoad 前触发，
+  // 用 ref 检查 complete 兜底，避免关闭后重开（同 URL 命中浏览器缓存）时一直 loading。
+  const handleImgRef = (node: HTMLImageElement | null) => {
+    if (node && node.complete && node.naturalWidth > 0) setImgLoaded(true);
+  };
 
   if (!mounted) return null;
 
@@ -106,6 +116,7 @@ export function WechatQrcodeModal({ open, onClose, figure, qrcodeUrl }: WechatQr
                     src={qrcodeUrl}
                     alt={`${figure.name} 小程序码`}
                     referrerPolicy="no-referrer"
+                    ref={handleImgRef}
                     onLoad={() => setImgLoaded(true)}
                     onError={() => setImgError(true)}
                   />

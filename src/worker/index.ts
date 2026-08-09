@@ -1212,9 +1212,18 @@ app.get("/api/figures/:id/relations", async (c) => {
            CASE WHEN fr.figure_a = ? THEN fb.name ELSE fa.name END as target_name,
            CASE WHEN fr.figure_a = ? THEN fb.identity ELSE fa.identity END as target_identity,
            CASE WHEN fr.figure_a = ? THEN fb.dynasty ELSE fa.dynasty END as target_dynasty,
-           (SELECT count(*) FROM figure_passages fp WHERE fp.figure_id = fr.figure_a AND fp.passage_id IN
-             (SELECT passage_id FROM figure_passages WHERE figure_id =
-               CASE WHEN fr.figure_a = ? THEN fb.id ELSE fa.id END)) as passage_count
+           (SELECT COUNT(*) FROM (
+             SELECT DISTINCT p.chapter_id
+             FROM figure_passages fp
+             JOIN passages p ON fp.passage_id = p.id
+             WHERE fp.figure_id = fr.figure_a
+               AND p.chapter_id IN (
+                 SELECT DISTINCT p2.chapter_id
+                 FROM figure_passages fp2
+                 JOIN passages p2 ON fp2.passage_id = p2.id
+                 WHERE fp2.figure_id = CASE WHEN fr.figure_a = ? THEN fb.id ELSE fa.id END
+               )
+           )) as passage_count
     FROM figure_relations fr
     JOIN figures fa ON fr.figure_a = fa.id
     JOIN figures fb ON fr.figure_b = fb.id
